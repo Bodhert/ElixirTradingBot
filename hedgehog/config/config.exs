@@ -9,13 +9,10 @@
 # move said applications out of the umbrella.
 import Config
 
-# Sample configuration:
-#
-config :logger, :console, level: :debug
-#       format: "$date $time [$level] $metadata$message\n",
-#       metadata: [:user_id]
-#
+config :logger,
+  level: :info
 
+# Import secrets file with Binance keys if it exists
 if File.exists?("config/secrets.exs") do
   import_config("secrets.exs")
 end
