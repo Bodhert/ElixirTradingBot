@@ -1,7 +1,10 @@
 defmodule Naive.Trader do
   use GenServer
-  require Logger
 
+  alias Decimal, as: D
+  alias Streamer.Binance.TradeEvent
+
+  require Logger
   defmodule State do
     @enforce_keys [:symbol, :profit_interval, :tick_size]
 
@@ -41,5 +44,90 @@ defmodule Naive.Trader do
     |> Map.get("filters")
     |> Enum.find(fn response -> response["filterType"] == "PRICE_FILTER" end)
     |> Map.get("tickSize")
+  end
+
+  def handle_cast(
+        %TradeEvent{price: price},
+        %State{symbol: symbol, buy_order: nil} = state
+      ) do
+    quantity = 100
+
+    Logger.info("Placing BUY order for #{symbol} @ #{price}, quantity: #{quantity}")
+
+    {:ok, %Binance.OrderResponse{} = order} =
+      Binance.order_limit_buy(symbol, quantity, price, "GTC")
+
+    {:noreply, %{state | buy_order: order}}
+  end
+
+  def handle_cast(
+        %TradeEvent{
+          buyer_order_id: order_id,
+          quantity: quantity
+        },
+        %State{
+          symbol: symbol,
+          buy_order: %Binance.OrderResponse{
+            price: buy_price,
+            order_id: order_id,
+            orig_qty: quantity
+          },
+          profit_interval: profit_interval,
+          tick_size: tick_size
+        } = state
+      ) do
+    sell_price = calculate_sell_price(buy_price, profit_interval, tick_size)
+
+    Logger.info(
+      "Buy order filled, placing SELL order for" <>
+        "#{symbol} @ #{sell_price}), quantity: #{quantity}"
+    )
+
+    {:ok, %Binance.OrderResponse{} = order} =
+      Binance.order_limit_sell(symbol, quantity, sell_price, "GTC")
+
+    {:noreply, %{state | sell_order: order}}
+  end
+
+  def handle_cast(
+        %TradeEvent{
+          seller_order_id: order_id,
+          quantity: quantity
+        },
+        %State{
+          sell_order: %Binance.OrderResponse{
+            order_id: order_id,
+            orig_qty: quantity
+          }
+        } = state
+      ) do
+    Logger.info("Trade Finished, trader will now exit")
+    {:stop, :normal, state}
+  end
+
+  def handle_cast(%TradeEvent{}, state) do
+    {:noreply, state}
+  end
+
+  defp calculate_sell_price(buy_price, profit_interval, tick_size) do
+    fee = "1.001"
+
+    original_price = D.mult(buy_price, fee)
+
+    net_target_price =
+      D.mult(
+        original_price,
+        D.add("1.0", profit_interval)
+      )
+
+    gross_target_price = D.mult(net_target_price, fee)
+
+    D.to_string(
+      D.mult(
+        D.div_int(gross_target_price, tick_size),
+        tick_size
+      ),
+      :normal
+    )
   end
 end
