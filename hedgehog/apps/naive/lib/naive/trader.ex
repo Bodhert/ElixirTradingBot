@@ -5,9 +5,9 @@ defmodule Naive.Trader do
   alias Streamer.Binance.TradeEvent
 
   require Logger
+
   defmodule State do
     @enforce_keys [:symbol, :profit_interval, :tick_size]
-
     defstruct [
       :symbol,
       :buy_order,
@@ -36,21 +36,11 @@ defmodule Naive.Trader do
      }}
   end
 
-  defp fetch_tick_size(symbol) do
-    Binance.get_exchange_info()
-    |> elem(1)
-    |> Map.get(:symbols)
-    |> Enum.find(fn response -> response["symbol"] == symbol end)
-    |> Map.get("filters")
-    |> Enum.find(fn response -> response["filterType"] == "PRICE_FILTER" end)
-    |> Map.get("tickSize")
-  end
-
   def handle_cast(
         %TradeEvent{price: price},
         %State{symbol: symbol, buy_order: nil} = state
       ) do
-    quantity = 100
+    quantity = "100"
 
     Logger.info("Placing BUY order for #{symbol} @ #{price}, quantity: #{quantity}")
 
@@ -79,8 +69,8 @@ defmodule Naive.Trader do
     sell_price = calculate_sell_price(buy_price, profit_interval, tick_size)
 
     Logger.info(
-      "Buy order filled, placing SELL order for" <>
-        "#{symbol} @ #{sell_price}), quantity: #{quantity}"
+      "Buy order filled, placing SELL order for " <>
+        "#{symbol} @ #{sell_price}, quantity: #{quantity}"
     )
 
     {:ok, %Binance.OrderResponse{} = order} =
@@ -101,7 +91,7 @@ defmodule Naive.Trader do
           }
         } = state
       ) do
-    Logger.info("Trade Finished, trader will now exit")
+    Logger.info("Trade finished, trader will now exit")
     {:stop, :normal, state}
   end
 
@@ -111,7 +101,6 @@ defmodule Naive.Trader do
 
   defp calculate_sell_price(buy_price, profit_interval, tick_size) do
     fee = "1.001"
-
     original_price = D.mult(buy_price, fee)
 
     net_target_price =
@@ -129,5 +118,15 @@ defmodule Naive.Trader do
       ),
       :normal
     )
+  end
+
+  defp fetch_tick_size(symbol) do
+    Binance.get_exchange_info()
+    |> elem(1)
+    |> Map.get(:symbols)
+    |> Enum.find(fn response -> response["symbol"] == symbol end)
+    |> Map.get("filters")
+    |> Enum.find(fn response -> response["filterType"] == "PRICE_FILTER" end)
+    |> Map.get("tickSize")
   end
 end
