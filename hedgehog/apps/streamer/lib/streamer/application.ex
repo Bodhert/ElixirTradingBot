@@ -8,6 +8,10 @@ defmodule Streamer.Application do
   @impl true
   def start(_type, _args) do
     children = [
+      {
+        Phoenix.PubSub,
+        name: Streamer.PubSub, adapter_name: Phoenix.PubSub.PG2
+      }
       # Starts a worker by calling: Streamer.Worker.start_link(arg)
       # {Streamer.Worker, arg}
     ]
