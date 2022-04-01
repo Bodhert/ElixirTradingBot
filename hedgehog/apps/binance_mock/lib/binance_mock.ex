@@ -33,7 +33,7 @@ defmodule BinanceMock do
     order_limit(symbol, qunatity, price, "SELL")
   end
 
-  defp order_limits(symbol, quantity, price, side) do
+  defp order_limit(symbol, quantity, price, side) do
     ## TODO
   end
 end
