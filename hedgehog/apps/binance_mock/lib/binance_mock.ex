@@ -105,4 +105,48 @@ defmodule BinanceMock do
 
     Map.put(order_books, :"#{symbol}", order_book)
   end
+
+  defp generate_fake_order(symbol, quantity, price, side)
+       when is_binary(symbol) and is_binary(quantity) and is_binary(price) and
+              (side == "BUY" or side == "SELL") do
+    current_time_stamp = :os.system_time(:milliseconds)
+    order_id = GenServer.call(__MODULE__, :generate_id)
+    client_order_id = :crypto.hash(:md5, "#{order_id}") |> Base.encode16()
+
+    Binance.Order.new(%{
+      symbol: symbol,
+      order_id: order_id,
+      client_order_id: client_order_id,
+      price: price,
+      orig_qty: quantity,
+      executed_qty: "0.00000000",
+      cummulative_quote_qty: "0.00000000",
+      status: "NEW",
+      time_in_force: "GTC",
+      type: "LIMIT",
+      side: side,
+      stop_price: "0.00000000",
+      iceberg_qty: "0.00000000",
+      time: current_time_stamp,
+      update_time: current_time_stamp,
+      is_working: true
+    })
+  end
+
+  defp convert_order_to_order_response(%Binance.Order{} = order) do
+    %{
+      struct(
+        Binance.OrderResponse,
+        order |> Map.to_list()
+      )
+      | transact_time: order.time
+    }
+  end
+
+  def handle_call(:generate_id, _from, %State{fake_order_id: id} = state) do
+    {:reply, id + 1, %{state | fake_order_id: id + 1}}
+  end
+
+  def get_order() do
+  end
 end
