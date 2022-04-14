@@ -6,6 +6,8 @@ defmodule Naive.Trader do
 
   require Logger
 
+  @binance_client Application.compile_env(:naive, :binance_client)
+
   defmodule State do
     @enforce_keys [:symbol, :profit_interval, :tick_size]
     defstruct [
@@ -50,7 +52,7 @@ defmodule Naive.Trader do
     Logger.info("Placing BUY order for #{symbol} @ #{price}, quantity: #{quantity}")
 
     {:ok, %Binance.OrderResponse{} = order} =
-      Binance.order_limit_buy(symbol, quantity, price, "GTC")
+      @binance_client.order_limit_buy(symbol, quantity, price, "GTC")
 
     {:noreply, %{state | buy_order: order}}
   end
@@ -79,7 +81,7 @@ defmodule Naive.Trader do
     )
 
     {:ok, %Binance.OrderResponse{} = order} =
-      Binance.order_limit_sell(symbol, quantity, sell_price, "GTC")
+      @binance_client.order_limit_sell(symbol, quantity, sell_price, "GTC")
 
     {:noreply, %{state | sell_order: order}}
   end
@@ -126,7 +128,7 @@ defmodule Naive.Trader do
   end
 
   defp fetch_tick_size(symbol) do
-    Binance.get_exchange_info()
+    @binance_client.get_exchange_info()
     |> elem(1)
     |> Map.get(:symbols)
     |> Enum.find(fn response -> response["symbol"] == symbol end)
