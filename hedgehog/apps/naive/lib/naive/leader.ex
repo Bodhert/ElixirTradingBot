@@ -70,7 +70,10 @@ defmodule Naive.Leader do
 
     case Enum.find_index(traders, fn trader -> trader.pid == trader_pid end) do
       nil ->
-        Logger.warn("Tried to restart finished #{symbol}." <> "trader that leader is not aware of")
+        Logger.warn(
+          "Tried to restart finished #{symbol}." <> "trader that leader is not aware of"
+        )
+
         {:noreply, state}
 
       index ->
@@ -113,6 +116,7 @@ defmodule Naive.Leader do
     %{
       symbol: symbol,
       chunks: 1,
+      buy_down_interval: "0.0001",
       profit_interval: "-0.0012",
       tick_size: tick_size
     }
