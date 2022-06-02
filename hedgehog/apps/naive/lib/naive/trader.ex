@@ -9,14 +9,16 @@ defmodule Naive.Trader do
   @binance_client Application.compile_env(:naive, :binance_client)
 
   defmodule State do
-    @enforce_keys [:symbol, :buy_down_interval, :profit_interval, :tick_size]
+    @enforce_keys [:symbol, :budget, :buy_down_interval, :profit_interval, :tick_size, :step_size]
     defstruct [
       :symbol,
+      :budget,
       :buy_order,
       :sell_order,
       :buy_down_interval,
       :profit_interval,
-      :tick_size
+      :tick_size,
+      :step_size
     ]
   end
 
@@ -41,13 +43,15 @@ defmodule Naive.Trader do
         %TradeEvent{price: price},
         %State{
           symbol: symbol,
+          budget: budget,
           buy_order: nil,
           buy_down_interval: buy_down_interval,
-          tick_size: tick_size
+          tick_size: tick_size,
+          step_size: step_size
         } = state
       ) do
     price = calculate_buy_price(price, buy_down_interval, tick_size)
-    quantity = "100"
+    quantity = calculate_quantity(budget, price, step_size)
 
     Logger.info("Placing BUY order for #{symbol} @ #{price}, quantity: #{quantity}")
 
@@ -142,6 +146,18 @@ defmodule Naive.Trader do
       D.mult(
         D.div_int(exact_buy_price, tick_size),
         tick_size
+      ),
+      :normal
+    )
+  end
+
+  defp calculate_quantity(budget, price, step_size) do
+    exact_target_quantity = D.div(budget, price)
+
+    D.to_string(
+      D.mult(
+        D.div_int(exact_target_quantity, step_size),
+        step_size
       ),
       :normal
     )
