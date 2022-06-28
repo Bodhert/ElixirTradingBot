@@ -39,10 +39,17 @@ defmodule Naive.Leader do
     )
   end
 
+  def notify(:rebuy_triggered, trader_state) do
+    GenServer.call(
+      :"#{__MODULE__}-#{trader_state.symbol}",
+      {:rebuy_triggered, trader_state}
+    )
+  end
+
   def handle_continue(:start_traders, %{symbol: symbol} = state) do
     settings = fetch_symbol_settings(symbol)
     trader_state = fresh_trader_state(settings)
-    traders = for _i <- 1..settings.chunks, do: start_new_trader(trader_state)
+    traders = [start_new_trader(trader_state)]
     {:noreply, %{state | settings: settings, traders: traders}}
   end
 
@@ -63,6 +70,34 @@ defmodule Naive.Leader do
     end
   end
 
+  def handle_call(
+        {:rebuy_triggered, new_trader_state},
+        {trader_pid, _},
+        %{traders: traders, symbol: symbol, settings: settings} = state
+      ) do
+    case Enum.find_index(traders, fn trader -> trader.pid == trader_pid end) do
+      nil ->
+        Logger.warn("Rebuy triggered by trader that leader is not aware of")
+        {:reply, :ok, state}
+
+      index ->
+        old_trader_data = Enum.at(traders, index)
+        new_trader_data = %{old_trader_data | :state => new_trader_state}
+        updated_traders = List.replace_at(traders, index, new_trader_data)
+
+        updated_traders =
+          if settings.chunks == length(traders) do
+            Logger.info("All traders already started for #{symbol}")
+            updated_traders
+          else
+            Logger.info("Starting new trader for #{symbol}")
+            [start_new_trader(fresh_trader_state(settings)) | updated_traders]
+          end
+
+        {:reply, :ok, %{state | :traders => updated_traders}}
+    end
+  end
+
   def handle_info(
         {:DOWN, _ref, :process, trader_pid, :normal},
         %{traders: traders, symbol: symbol, settings: settings} = state
@@ -72,7 +107,8 @@ defmodule Naive.Leader do
     case Enum.find_index(traders, fn trader -> trader.pid == trader_pid end) do
       nil ->
         Logger.warn(
-          "Tried to restart finished #{symbol}." <> "trader that leader is not aware of"
+          "Tried to restart finished #{symbol} " <>
+            "trader that leader is not aware of"
         )
 
         {:noreply, state}
@@ -110,7 +146,9 @@ defmodule Naive.Leader do
   defp fresh_trader_state(settings) do
     %{
       struct(Trader.State, settings)
-      | budget: D.div(settings.budget, settings.chunks)
+      | id: :os.system_time(:millisecond),
+        budget: D.div(settings.budget, settings.chunks),
+        rebuy_notified: false
     }
   end
 
@@ -120,10 +158,11 @@ defmodule Naive.Leader do
     Map.merge(
       %{
         symbol: symbol,
-        chunks: 1,
-        budget: 20,
+        chunks: 5,
+        budget: 100,
         buy_down_interval: "0.0001",
-        profit_interval: "-0.0012"
+        profit_interval: "-0.0012",
+        rebuy_interval: "0.001"
       },
       symbol_filters
     )
