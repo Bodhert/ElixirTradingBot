@@ -1,0 +1,2 @@
+defmodule Streamer.DynamicStreamerSupervisor do
+end
