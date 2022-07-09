@@ -4,8 +4,6 @@ alias Decimal
 alias Streamer.Repo
 alias Streamer.Schema.Settings
 
-binance_client = Application.compile_env(:naive, :binance_client)
-
 Logger.info("Fetching exchange info from Binance to create streaming settings")
 
 {:ok, %{symbols: symbols}} = Binance.get_exchange_info()
