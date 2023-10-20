@@ -1,7 +1,2 @@
 # ElixirTradingBot
-following the elixir crypto bot implementation
-
-
-notes::
-in chapter one they suggest that to be tested later, but we can add a binance mock 
-account: https://testnet.binance.vision
+this is a follow a long repo for [hands-on-elixir-and-otp-cryptocurrency-trading-bot-source-code](https://github.com/Cinderella-Man/hands-on-elixir-and-otp-cryptocurrency-trading-bot-source-code)
