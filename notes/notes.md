@@ -21,3 +21,9 @@ when using [vim](https://vi.stackexchange.com/questions/4307/multiple-cursors-at
 # Chapters
 ## Chapter 1
 Elixir is usually easy to understand, so when the documentation is ligth we must not be afraid of take a look of to the source code 
+
+here we review the commands to handle some project organization like 
+* `iex -S mix`: run the project in 'interactive' mode
+* `mix deps.get`: bring dependencies from the mix file
+* `mix format`: organize the project with a 'linter'
+* `mix new streamer --sup`: creates a new project with a supervisor structure
