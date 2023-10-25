@@ -2,6 +2,9 @@
 in chapter one they suggest that to be tested later, but we can add a binance mock 
 account: https://testnet.binance.vision
 
+I will use a rule of only read one link depth, meaning that I will not matter if a links goes to another link, I will 
+read only the first link
+
 # Links
 ## Chapter 1
 [binance websocket documentation](https://github.com/binance/binance-spot-api-docs/blob/master/web-socket-streams.md)
@@ -27,3 +30,14 @@ here we review the commands to handle some project organization like
 * `mix deps.get`: bring dependencies from the mix file
 * `mix format`: organize the project with a 'linter'
 * `mix new streamer --sup`: creates a new project with a supervisor structure
+
+## Chapter 2
+when using the word `use` in a module we usually need to fullfill the contract, in
+the case of the genserver `start_link/1` allow us to register a process  with a name
+
+the trader needs to known
+* what symbol to trade, this means like XRPUSDT which means i will change XRP to USDT
+* placed buy order (if any)
+* place sell order (if any)
+* profit interval (what net profit % we would like to achieve when buying and selling the asset in one cycle)
+* tick_size (is how the smallest and biggest unit that we can 'divide' the 'symbol' for example, in dollars the minimal unit are cents, TODO: finish [reading](https://www.investopedia.com/terms/t/tick.asp)  )
