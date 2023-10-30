@@ -41,3 +41,5 @@ the trader needs to known
 * place sell order (if any)
 * profit interval (what net profit % we would like to achieve when buying and selling the asset in one cycle)
 * tick_size is how the smallest and biggest unit that we can 'divide' the 'symbol' for example, in dollars the minimal unit are cents, TODO: finish [reading](https://www.investopedia.com/terms/t/tick.asp), the tick size is a movement indicator, it can tell us if the transaction occurred at a higher or lower price
+
+* the decimal module will allow us to overcome problems with the precision
