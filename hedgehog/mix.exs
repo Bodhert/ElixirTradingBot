@@ -9,7 +9,8 @@ defmodule Hedgehog.MixProject do
       deps: deps(),
       elixirc_options: [
         warnings_as_errors: true
-      ]
+      ],
+      aliases: aliases()
     ]
   end
 
@@ -19,6 +20,15 @@ defmodule Hedgehog.MixProject do
   #
   # Run "mix help deps" for examples and options.
   defp deps do
-    []
+    [
+      {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
+      {:sobelow, "~> 0.13", only: [:dev, :test], runtime: false}
+    ]
+  end
+
+  defp aliases do
+    [
+      sobelow: ["mix sobelow"]
+    ]
   end
 end
