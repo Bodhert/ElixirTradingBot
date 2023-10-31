@@ -43,3 +43,11 @@ the trader needs to known
 * tick_size is how the smallest and biggest unit that we can 'divide' the 'symbol' for example, in dollars the minimal unit are cents, TODO: finish [reading](https://www.investopedia.com/terms/t/tick.asp), the tick size is a movement indicator, it can tell us if the transaction occurred at a higher or lower price
 
 * the decimal module will allow us to overcome problems with the precision
+
+---
+
+![trade_cycle](resources/image.png)
+the trader will have 3 states:
+* without orders (sell or buy)
+* with a sell order placed 
+* with a buy order placed 

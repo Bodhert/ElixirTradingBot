@@ -3,6 +3,17 @@ defmodule Naive.Trader do
 
   require Logger
 
+  defmodule State do
+    @enforce_keys [:symbol, :profit_interval, :tick_size]
+    defstruct [
+      :symbol,
+      :buy_order,
+      :sell_order,
+      :profit_interval,
+      :tick_size
+    ]
+  end
+
   def start_link(%{} = args) do
     GenServer.start(__MODULE__, args, name: :trader)
   end
@@ -30,16 +41,5 @@ defmodule Naive.Trader do
     |> Map.get("filters")
     |> Enum.find(&(&1["filterType"] == "PRICE_FILTER"))
     |> Map.get("tickSize")
-  end
-
-  defmodule State do
-    @enforce_keys [:symbol, :profit_interval, :tick_size]
-    defstruct [
-      :symbol,
-      :buy_order,
-      :sell_order,
-      :profit_interval,
-      :tick_size
-    ]
   end
 end

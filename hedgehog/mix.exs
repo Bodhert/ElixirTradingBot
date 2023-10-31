@@ -28,7 +28,7 @@ defmodule Hedgehog.MixProject do
 
   defp aliases do
     [
-      sobelow: ["mix sobelow"]
+      sobelow: ["cmd mix sobelow"]
     ]
   end
 end
