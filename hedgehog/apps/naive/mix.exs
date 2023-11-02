@@ -28,6 +28,7 @@ defmodule Naive.MixProject do
     [
       {:binance, "~> 1.0"},
       {:decimal, "~> 2.0"},
+      {:sobelow, "~> 0.13", only: [:dev, :test], runtime: false},
       {:streamer, in_umbrella: true}
     ]
   end

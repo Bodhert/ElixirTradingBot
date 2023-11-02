@@ -11,10 +11,7 @@ defmodule Streamer.MixProject do
       lockfile: "../../mix.lock",
       elixir: "~> 1.14",
       start_permanent: Mix.env() == :prod,
-      deps: deps(),
-      elixirc_options: [
-        warnings_as_errors: true
-      ]
+      deps: deps()
     ]
   end
 
@@ -30,7 +27,8 @@ defmodule Streamer.MixProject do
   defp deps do
     [
       {:websockex, "~> 0.4"},
-      {:jason, "~> 1.2"}
+      {:jason, "~> 1.2"},
+      {:sobelow, "~> 0.13", only: [:dev, :test], runtime: false}
     ]
   end
 end

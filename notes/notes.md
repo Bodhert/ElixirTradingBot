@@ -51,3 +51,5 @@ the trader will have 3 states:
 * without orders (sell or buy)
 * with a sell order placed 
 * with a buy order placed 
+
+in the mix.exs of the root directory, putting a dependency there does not mean that will be available for the apps inside the umbrella, configuration is needed, that said, there are some packages 
