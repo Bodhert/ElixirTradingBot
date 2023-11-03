@@ -3,6 +3,8 @@ defmodule Naive.Trader do
 
   require Logger
 
+  alias Streamer.Binance.TradeEvent
+
   defmodule State do
     @enforce_keys [:symbol, :profit_interval, :tick_size]
     defstruct [
@@ -41,5 +43,39 @@ defmodule Naive.Trader do
     |> Map.get("filters")
     |> Enum.find(&(&1["filterType"] == "PRICE_FILTER"))
     |> Map.get("tickSize")
+  end
+
+  def handle_cast(%TradeEvent{price: price}, %State{symbol: symbol, buy_order: nil} = state) do
+    quantity = "100"
+
+    Logger.info("Placing Buy order for #{symbol} @ #{price}, quantity: #{quantity}")
+
+    {:ok, %Binance.OrderResponse{} = order} =
+      Binance.order_limit_buy(symbol, quantity, price, "GTC")
+
+    {:noreply, %{state | buy_order: order}}
+  end
+
+  def handle_cast(%TradeEvent{buy_order_id: order_id, quantity: quantity}, %State{
+        symbol: symbol,
+        buy_order: %Binance.OrderResponse{
+          price: buy_price,
+          order_id: order_id,
+          orig_qty: quantity
+        },
+        profit_interval: profit_interval,
+        tick_size: tick_size
+      }) do
+    sell_price = calculate_sell_price(buy_price, profit_interval, tick_size)
+
+    Logger.info(
+      "Buy order filled, placing SELL order for" <>
+        "#{symbol} @ #{sell_price}, quantity: #{quantity}"
+    )
+
+    {:ok, %Binance.OrderResponse{} = order} =
+      Binance.order_limit_buy(symbol, quantity, price, "GTC")
+
+    {:noreply, %{state | sell_order: order}}
   end
 end

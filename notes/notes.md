@@ -23,7 +23,7 @@ when using [vim](https://vi.stackexchange.com/questions/4307/multiple-cursors-at
 
 # Chapters
 ## Chapter 1
-Elixir is usually easy to understand, so when the documentation is ligth we must not be afraid of take a look of to the source code 
+Elixir is usually easy to understand, so when the documentation is light we must not be afraid of take a look of to the source code 
 
 here we review the commands to handle some project organization like 
 * `iex -S mix`: run the project in 'interactive' mode
@@ -53,3 +53,10 @@ the trader will have 3 states:
 * with a buy order placed 
 
 in the mix.exs of the root directory, putting a dependency there does not mean that will be available for the apps inside the umbrella, configuration is needed, that said, there are some packages 
+
+
+* new_trader: does not have any open order cause no `buy_order` is there
+* buy_order_placed: arrives a order_id matching our buy_order_id
+* sell_order_placed: arrives a order_id matching our sell_order_id, here the trader can exit
+
+
