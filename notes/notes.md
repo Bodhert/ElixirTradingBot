@@ -59,4 +59,11 @@ in the mix.exs of the root directory, putting a dependency there does not mean t
 * buy_order_placed: arrives a order_id matching our buy_order_id
 * sell_order_placed: arrives a order_id matching our sell_order_id, here the trader can exit
 
+the function `calculate_sell_price/3` works in the next way:
+  * first the fee is harcoded and is equivalent to 0.1%
+  * `original_price` is the buy price adding it the fee.
+  * we grow the `original_price` with the `profit_interval` giving us the result of `net_target_price`
+  * thus there is commision for selling we need to add a fee to the `net_target_price` giving us the result of the `gross_target_price`
+  * we need to normalze the price since binance wont accept prices that are not divisible by the symbols.
+  
 

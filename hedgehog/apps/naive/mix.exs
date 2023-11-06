@@ -11,7 +11,10 @@ defmodule Naive.MixProject do
       lockfile: "../../mix.lock",
       elixir: "~> 1.14",
       start_permanent: Mix.env() == :prod,
-      deps: deps()
+      deps: deps(),
+      elixirc_options: [
+        warnings_as_errors: true
+      ]
     ]
   end
 

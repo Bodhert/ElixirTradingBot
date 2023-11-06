@@ -7,9 +7,6 @@ defmodule Hedgehog.MixProject do
       version: "0.1.0",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
-      elixirc_options: [
-        warnings_as_errors: true
-      ],
       aliases: aliases()
     ]
   end
