@@ -17,7 +17,7 @@ defmodule Naive.Trader do
   end
 
   def start_link(%{} = args) do
-    GenServer.start(__MODULE__, args, name: :trader)
+    GenServer.start_link(__MODULE__, args, name: :trader)
   end
 
   def init(%{symbol: symbol, profit_interval: profit_interval}) do
@@ -35,20 +35,10 @@ defmodule Naive.Trader do
      }}
   end
 
-  def fetch_tick_size(symbol) do
-    Binance.get_exchange_info()
-    |> elem(1)
-    |> Map.get(:symbols)
-    |> Enum.find(&(&1["symbol"] == symbol))
-    |> Map.get("filters")
-    |> Enum.find(&(&1["filterType"] == "PRICE_FILTER"))
-    |> Map.get("tickSize")
-  end
-
   def handle_cast(%TradeEvent{price: price}, %State{symbol: symbol, buy_order: nil} = state) do
     quantity = "100"
 
-    Logger.info("Placing Buy order for #{symbol} @ #{price}, quantity: #{quantity}")
+    Logger.info("Placing BUY order for #{symbol} @ #{price}, quantity: #{quantity}")
 
     {:ok, %Binance.OrderResponse{} = order} =
       Binance.order_limit_buy(symbol, quantity, price, "GTC")
@@ -77,9 +67,24 @@ defmodule Naive.Trader do
     )
 
     {:ok, %Binance.OrderResponse{} = order} =
-      Binance.order_limit_buy(symbol, quantity, sell_price, "GTC")
+      Binance.order_limit_sell(symbol, quantity, sell_price, "GTC")
 
     {:noreply, %{state | sell_order: order}}
+  end
+
+  def handle_cast(
+        %TradeEvent{
+          seller_order_id: order_id,
+          quantity: quantity
+        },
+        %State{sell_order: %Binance.OrderResponse{order_id: order_id, orig_qty: quantity}} = state
+      ) do
+    Logger.info("Trader finished, trader will now exit")
+    {:stop, :normal, state}
+  end
+
+  def handle_cast(%TradeEvent{}, state) do
+    {:noreply, state}
   end
 
   defp calculate_sell_price(buy_price, profit_interval, tick_size) do
@@ -97,5 +102,15 @@ defmodule Naive.Trader do
       ),
       :normal
     )
+  end
+
+  def fetch_tick_size(symbol) do
+    Binance.get_exchange_info()
+    |> elem(1)
+    |> Map.get(:symbols)
+    |> Enum.find(&(&1["symbol"] == symbol))
+    |> Map.get("filters")
+    |> Enum.find(&(&1["filterType"] == "PRICE_FILTER"))
+    |> Map.get("tickSize")
   end
 end
