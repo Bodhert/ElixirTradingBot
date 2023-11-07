@@ -12,6 +12,7 @@ defmodule Streamer.MixProject do
       elixir: "~> 1.14",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
+      xref: [exclude: [Naive]],
       elixirc_options: [
         warnings_as_errors: true
       ]
@@ -31,7 +32,8 @@ defmodule Streamer.MixProject do
     [
       {:websockex, "~> 0.4"},
       {:jason, "~> 1.2"},
-      {:sobelow, "~> 0.13", only: [:dev, :test], runtime: false}
+      {:sobelow, "~> 0.13", only: [:dev, :test], runtime: false},
+
     ]
   end
 end
