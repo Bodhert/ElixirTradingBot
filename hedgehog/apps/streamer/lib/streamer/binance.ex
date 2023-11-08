@@ -2,7 +2,7 @@ defmodule Streamer.Binance do
   require Logger
   use WebSockex
 
-  @stream_endpoint "wss://stream.binance.com:9443/ws/"
+  @stream_endpoint "wss://testnet.binance.vision/ws/"
 
   def start_link(symbol) do
     symbol = String.downcase(symbol)
