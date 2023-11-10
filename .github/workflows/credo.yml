@@ -35,11 +35,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        otp: [version]
-        elixir: [version]
+        otp: [1.15.2]
+        elixir: [26.0]
     steps:
       - uses: actions/checkout@v3
-      - uses: erlef/setup-beam@988e02bfe678367a02564f65ca2e37726dc0268f
+      - uses: erlef/setup-beam@61e01a43a562a89bfc54c7f9a378ff67b03e4a21
         with:
           otp-version: ${{matrix.otp}}
           elixir-version: ${{matrix.elixir}}
