@@ -33,7 +33,7 @@ defmodule Streamer.Binance do
     }
 
     Logger.debug(
-      "Trade event received" <>
+      "Trade event received " <>
         "#{trade_event.symbol}@#{trade_event.price}"
     )
 

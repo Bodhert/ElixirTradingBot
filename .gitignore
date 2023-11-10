@@ -6,6 +6,7 @@
 erl_crash.dump
 *.ez
 *.beam
-/config/*.secret.exs
+/config/secrets.exs
 .elixir_ls/
 postgres-data
+/tmp/

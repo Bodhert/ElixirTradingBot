@@ -62,7 +62,7 @@ defmodule Naive.Trader do
     sell_price = calculate_sell_price(buy_price, profit_interval, tick_size)
 
     Logger.info(
-      "Buy order filled, placing SELL order for" <>
+      "Buy order filled, placing SELL order for " <>
         "#{symbol} @ #{sell_price}, quantity: #{quantity}"
     )
 
@@ -79,7 +79,7 @@ defmodule Naive.Trader do
         },
         %State{sell_order: %Binance.OrderResponse{order_id: order_id, orig_qty: quantity}} = state
       ) do
-    Logger.info("Trader finished, trader will now exit")
+    Logger.info("Trade finished, trader will now exit")
     {:stop, :normal, state}
   end
 
@@ -104,7 +104,7 @@ defmodule Naive.Trader do
     )
   end
 
-  def fetch_tick_size(symbol) do
+  defp fetch_tick_size(symbol) do
     Binance.get_exchange_info()
     |> elem(1)
     |> Map.get(:symbols)

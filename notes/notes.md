@@ -65,5 +65,9 @@ the function `calculate_sell_price/3` works in the next way:
   * we grow the `original_price` with the `profit_interval` giving us the result of `net_target_price`
   * thus there is commision for selling we need to add a fee to the `net_target_price` giving us the result of the `gross_target_price`
   * we need to normalze the price since binance wont accept prices that are not divisible by the symbols.
+
+I have tested using the binance [testnet](https://testnet.binance.vision) and looks like it worked,
+
+I am comparing my branch with the remote with franton to see differences
   
 
