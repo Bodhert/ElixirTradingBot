@@ -1,4 +1,7 @@
 defmodule Streamer.Binance.TradeEvent do
+  @moduledoc """
+  Trade event struct
+  """
   defstruct [
     :event_type,
     :event_time,

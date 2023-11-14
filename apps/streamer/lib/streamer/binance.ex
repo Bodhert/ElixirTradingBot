@@ -1,4 +1,7 @@
 defmodule Streamer.Binance do
+  @moduledoc """
+  Binance streamer handler
+  """
   require Logger
   use WebSockex
 

@@ -8,6 +8,10 @@ read only the first link
 # Links
 ## Chapter 1
 [binance websocket documentation](https://github.com/binance/binance-spot-api-docs/blob/master/web-socket-streams.md)
+[binance testenet](https://testnet.binance.vision)
+[repo source code](https://github.com/Cinderella-Man/hands-on-elixir-and-otp-cryptocurrency-trading-bot-source-code)
+[book](https://book.elixircryptobot.com/)
+
 
 # Extras
 when using [vim](https://vi.stackexchange.com/questions/4307/multiple-cursors-at-desired-location), and we need to make a repeatable change, we should find a way to search the pattern and apply the change with the `.` command

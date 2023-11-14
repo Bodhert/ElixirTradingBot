@@ -1,4 +1,8 @@
 defmodule Naive.Trader do
+  @moduledoc """
+  Trader implementation
+  """
+
   use GenServer
 
   require Logger
@@ -6,6 +10,9 @@ defmodule Naive.Trader do
   alias Streamer.Binance.TradeEvent
 
   defmodule State do
+    @moduledoc """
+    Trader State
+    """
     @enforce_keys [:symbol, :profit_interval, :tick_size]
     defstruct [
       :symbol,
