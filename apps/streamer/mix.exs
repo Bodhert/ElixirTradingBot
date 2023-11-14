@@ -30,9 +30,10 @@ defmodule Streamer.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:websockex, "~> 0.4"},
       {:jason, "~> 1.2"},
-      {:sobelow, "~> 0.13", only: [:dev, :test], runtime: false}
+      {:phoenix_pubsub, "~> 2.0"},
+      {:sobelow, "~> 0.13", only: [:dev, :test], runtime: false},
+      {:websockex, "~> 0.4"}
     ]
   end
 end

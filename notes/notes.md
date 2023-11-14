@@ -12,7 +12,6 @@ read only the first link
 [repo source code](https://github.com/Cinderella-Man/hands-on-elixir-and-otp-cryptocurrency-trading-bot-source-code)
 [book](https://book.elixircryptobot.com/)
 
-
 # Extras
 when using [vim](https://vi.stackexchange.com/questions/4307/multiple-cursors-at-desired-location), and we need to make a repeatable change, we should find a way to search the pattern and apply the change with the `.` command
 
@@ -75,3 +74,6 @@ I have tested using the binance [testnet](https://testnet.binance.vision) and lo
 I am comparing my branch with the remote with franton to see differences
   
 
+## Chapter 3
+
+only one proccess can be registered under a single name.
