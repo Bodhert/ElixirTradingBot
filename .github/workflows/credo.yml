@@ -46,6 +46,8 @@ jobs:
         run: mix deps.get
       - name: compile dependencies
         run: mix deps.compile
+      - name: check format
+        run: mix format --check-formatted
       - name: compile
         run: mix compile
       - name: credo-scan
