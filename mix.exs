@@ -7,9 +7,7 @@ defmodule Hedgehog.MixProject do
       version: "0.1.0",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
-      elixirc_options: [
-        warnings_as_errors: true
-      ]
+      aliases: aliases()
     ]
   end
 
@@ -19,6 +17,14 @@ defmodule Hedgehog.MixProject do
   #
   # Run "mix help deps" for examples and options.
   defp deps do
-    []
+    [
+      {:credo, "~> 1.7", only: [:dev, :test], runtime: false}
+    ]
+  end
+
+  defp aliases do
+    [
+      sobelow: ["cmd mix sobelow"]
+    ]
   end
 end

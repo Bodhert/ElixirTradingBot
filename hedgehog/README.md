@@ -1,4 +1,0 @@
-# Hedgehog
-
-**TODO: Add description**
-
