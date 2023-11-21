@@ -94,3 +94,5 @@ the candlesticks represents any period, from seconds to years
 the distance beetween open a close is called body, is the part that looks "filled" and the distance beetween high and low is called `shadow`, longer bodies means that there was a intense buying and selling pressures.
 
 Heikin-Ashi candlesticks uses the average, combine them with the traditional candlesticks to avoid false positives and spot market trends and reduce market noise.
+
+para poder hacer un mock del api se necesita conocer bien como funciona el api y como interactua con nuestra aplicacion.
