@@ -8,6 +8,7 @@ defmodule BinanceMock.Application do
   @impl true
   def start(_type, _args) do
     children = [
+      {BinanceMock, []}
       # Starts a worker by calling: BinanceMock.Worker.start_link(arg)
       # {BinanceMock.Worker, arg}
     ]
