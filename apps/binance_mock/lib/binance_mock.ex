@@ -11,10 +11,16 @@ defmodule BinanceMock do
   require Logger
 
   defmodule State do
+    @moduledoc """
+    State struct
+    """
     defstruct order_books: %{}, subscriptions: [], fake_order_id: 1
   end
 
   defmodule OrderBook do
+    @moduledoc """
+    Order Book struct
+    """
     defstruct buy_side: [], sell_side: [], historical: []
   end
 
