@@ -12,6 +12,9 @@ read only the first link
 [repo source code](https://github.com/Cinderella-Man/hands-on-elixir-and-otp-cryptocurrency-trading-bot-source-code)
 [book](https://book.elixircryptobot.com/)
 
+## Chapter 4
+[understanding candlestick](https://academy.binance.com/en/articles/a-beginners-guide-to-candlestick-charts)
+
 # Extras
 when using [vim](https://vi.stackexchange.com/questions/4307/multiple-cursors-at-desired-location), and we need to make a repeatable change, we should find a way to search the pattern and apply the change with the `.` command
 
@@ -77,3 +80,19 @@ I am comparing my branch with the remote with franton to see differences
 ## Chapter 3
 
 only one proccess can be registered under a single name.
+
+## Chapter 4
+the candlesticks represents any period, from seconds to years
+
+
+1) Open — The first recorded trading price of the asset within that particular timeframe.
+2) High — The highest recorded trading price of the asset within that particular timeframe.
+3) Low — The lowest recorded trading price of the asset within that particular timeframe.
+4) Close — The last recorded trading price of the asset within that particular timeframe.
+![Alt text](resources/candle_stick_charts.png)
+
+the distance beetween open a close is called body, is the part that looks "filled" and the distance beetween high and low is called `shadow`, longer bodies means that there was a intense buying and selling pressures.
+
+Heikin-Ashi candlesticks uses the average, combine them with the traditional candlesticks to avoid false positives and spot market trends and reduce market noise.
+
+para poder hacer un mock del api se necesita conocer bien como funciona el api y como interactua con nuestra aplicacion.
