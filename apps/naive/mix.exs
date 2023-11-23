@@ -30,6 +30,7 @@ defmodule Naive.MixProject do
   defp deps do
     [
       {:binance, "~> 1.0"},
+      {:binance_mock, in_umbrella: true},
       {:decimal, "~> 2.0"},
       {:phoenix_pubsub, "~> 2.0"},
       {:sobelow, "~> 0.13", only: [:dev, :test], runtime: false},
