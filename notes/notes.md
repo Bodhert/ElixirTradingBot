@@ -106,3 +106,5 @@ the temporary restart option disallow the supervisor to restart its childs, a de
 it’s advised to keep supervisor processes slim.
 
 when designing the supervision tree, it is important to check how is behaving using the observer of erlang
+
+the `handle_continue` callback is usually used when I need to do some work jus after init is called, has the benefict that the supervisor gets unblocked faster, that means that the next child could start and be ready even if the previous one was called first
