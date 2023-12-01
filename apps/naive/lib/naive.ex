@@ -7,7 +7,9 @@ defmodule Naive do
     symbol = String.upcase(symbol)
 
     {:ok, _pid} =
-      DynamicSupervisor.start_child(Naive.DynamicSymbolSupervisor, {Naive.SymbolSupervisor, symbol})
-
+      DynamicSupervisor.start_child(
+        Naive.DynamicSymbolSupervisor,
+        {Naive.SymbolSupervisor, symbol}
+      )
   end
 end

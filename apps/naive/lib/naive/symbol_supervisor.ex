@@ -14,8 +14,7 @@ defmodule Naive.SymbolSupervisor do
       [
         {
           DynamicSupervisor,
-          strategy: :one_for_one,
-          name: :"Naive.DynamicTraderSupervisor-#{symbol}"
+          strategy: :one_for_one, name: :"Naive.DynamicTraderSupervisor-#{symbol}"
         },
         {Naive.Leader, symbol}
       ],
