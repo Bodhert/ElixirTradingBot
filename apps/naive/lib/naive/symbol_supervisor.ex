@@ -8,7 +8,7 @@ defmodule Naive.SymbolSupervisor do
   end
 
   def init(symbol) do
-    Logger.info("Starting new supervisor tree to trade on #{symbol}")
+    Logger.info("Starting new supervision tree to trade on #{symbol}")
 
     Supervisor.init(
       [

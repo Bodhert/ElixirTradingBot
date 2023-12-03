@@ -76,7 +76,7 @@ defmodule Naive.Trader do
       @binance_client.order_limit_sell(symbol, quantity, sell_price, "GTC")
 
     new_state = %{state | sell_order: order}
-    Naive.Leader.notify(:trader_state_update, new_state)
+    Naive.Leader.notify(:trader_state_updated, new_state)
 
     {:noreply, new_state}
   end
@@ -113,13 +113,5 @@ defmodule Naive.Trader do
     )
   end
 
-  defp fetch_tick_size(symbol) do
-    @binance_client.get_exchange_info()
-    |> elem(1)
-    |> Map.get(:symbols)
-    |> Enum.find(&(&1["symbol"] == symbol))
-    |> Map.get("filters")
-    |> Enum.find(&(&1["filterType"] == "PRICE_FILTER"))
-    |> Map.get("tickSize")
-  end
+
 end
