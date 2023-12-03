@@ -112,6 +112,4 @@ defmodule Naive.Trader do
       :normal
     )
   end
-
-
 end

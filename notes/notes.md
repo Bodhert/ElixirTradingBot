@@ -107,4 +107,6 @@ it’s advised to keep supervisor processes slim.
 
 when designing the supervision tree, it is important to check how is behaving using the observer of erlang
 
-the `handle_continue` callback is usually used when I need to do some work jus after init is called, has the benefict that the supervisor gets unblocked faster, that means that the next child could start and be ready even if the previous one was called first
+the `handle_continue` callback is usually used when I need to do some work jus after init is called, has the benefit that the supervisor gets unblocked faster, that means that the next child could start and be ready even if the previous one was called first
+
+also I learn that is easy to modify locally the libraries code to detect issues, it is a good approach to do when you want to know the library and its deps. like alway do not be afraid of reviewing source code
