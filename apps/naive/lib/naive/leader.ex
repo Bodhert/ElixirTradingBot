@@ -1,4 +1,7 @@
 defmodule Naive.Leader do
+  @moduledoc """
+  Saves the states of the trading symbol
+  """
   use GenServer
 
   alias Naive.Trader
@@ -8,12 +11,18 @@ defmodule Naive.Leader do
   @binance_client Application.compile_env(:naive, :binance_client)
 
   defmodule State do
+    @moduledoc """
+    State to store symbols information
+    """
     defstruct symbol: nil,
               settings: nil,
               traders: []
   end
 
   defmodule TraderData do
+    @moduledoc """
+    Individual trader data
+    """
     defstruct pid: nil,
               ref: nil,
               state: nil
@@ -119,7 +128,6 @@ defmodule Naive.Leader do
 
   defp fetch_tick_size(symbol) do
     @binance_client.get_exchange_info()
-    |> dbg()
     |> elem(1)
     |> Map.get(:symbols)
     |> Enum.find(&(&1["symbol"] == symbol))

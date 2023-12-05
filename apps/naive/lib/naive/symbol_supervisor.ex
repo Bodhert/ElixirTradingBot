@@ -1,4 +1,7 @@
 defmodule Naive.SymbolSupervisor do
+  @moduledoc """
+  Supervise the trader Symbol
+  """
   use Supervisor
 
   require Logger
