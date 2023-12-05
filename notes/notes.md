@@ -110,3 +110,6 @@ when designing the supervision tree, it is important to check how is behaving us
 the `handle_continue` callback is usually used when I need to do some work jus after init is called, has the benefit that the supervisor gets unblocked faster, that means that the next child could start and be ready even if the previous one was called first
 
 also I learn that is easy to modify locally the libraries code to detect issues, it is a good approach to do when you want to know the library and its deps. like alway do not be afraid of reviewing source code
+
+## Chapter 6
+We pay fee for selling and for buying, for this `buy_down_interval`, so every first trade, the trader will take its price and calculate a decreased ammount, this interval should never be smaller than double the fee
