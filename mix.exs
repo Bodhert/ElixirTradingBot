@@ -11,6 +11,12 @@ defmodule Hedgehog.MixProject do
     ]
   end
 
+  def application do
+    [
+      extra_applications: [:logger, :eex, :wx, :observer, :runtime_tools]
+    ]
+  end
+
   # Dependencies listed here are available only for this
   # project and cannot be accessed from applications inside
   # the apps folder.

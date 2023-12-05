@@ -96,3 +96,17 @@ the distance beetween open a close is called body, is the part that looks "fille
 Heikin-Ashi candlesticks uses the average, combine them with the traditional candlesticks to avoid false positives and spot market trends and reduce market noise.
 
 para poder hacer un mock del api se necesita conocer bien como funciona el api y como interactua con nuestra aplicacion.
+
+## Chapter 5
+
+the temporary restart option disallow the supervisor to restart its childs, a design pattern when storing state is having someone else storing that for me, and when crashing, create a new one with the stored state
+
+* the Naive.Leader will ask DynamicTraderSupervisor to start the Naive.Trader child process(es) (puede que acá exista un error pero en el diagrama)
+
+it’s advised to keep supervisor processes slim.
+
+when designing the supervision tree, it is important to check how is behaving using the observer of erlang
+
+the `handle_continue` callback is usually used when I need to do some work jus after init is called, has the benefit that the supervisor gets unblocked faster, that means that the next child could start and be ready even if the previous one was called first
+
+also I learn that is easy to modify locally the libraries code to detect issues, it is a good approach to do when you want to know the library and its deps. like alway do not be afraid of reviewing source code
