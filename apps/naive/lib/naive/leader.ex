@@ -36,7 +36,7 @@ defmodule Naive.Leader do
     {:ok, %State{symbol: symbol}, {:continue, :start_traders}}
   end
 
-  def notify(:trader_state_update, trader_state) do
+  def notify(:trader_state_updated, trader_state) do
     GenServer.call(
       :"#{__MODULE__}-#{trader_state.symbol}",
       {:update_trader_state, trader_state}
@@ -121,6 +121,7 @@ defmodule Naive.Leader do
     %{
       symbol: symbol,
       chunks: 1,
+      buy_down_interval: "0.0001",
       profit_interval: "-0.0012",
       tick_size: tick_size
     }
