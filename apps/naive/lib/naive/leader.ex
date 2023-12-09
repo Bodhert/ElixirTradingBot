@@ -112,7 +112,10 @@ defmodule Naive.Leader do
   end
 
   defp fresh_trader_state(settings) do
-    struct(Trader.State, settings)
+    %{
+      struct(Trader.State, settings)
+      | budget: Decimal.div(settings.budget, settings.chunks)
+    }
   end
 
   defp fetch_symbol_settings(symbol) do
@@ -122,8 +125,9 @@ defmodule Naive.Leader do
       %{
         symbol: symbol,
         chunks: 1,
+        budget: 20,
         buy_down_interval: "0.0001",
-        profit_interval: "-0.0012",
+        profit_interval: "-0.0012"
       },
       symbol_filters
     )
