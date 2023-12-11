@@ -101,8 +101,6 @@ para poder hacer un mock del api se necesita conocer bien como funciona el api y
 
 the temporary restart option disallow the supervisor to restart its childs, a design pattern when storing state is having someone else storing that for me, and when crashing, create a new one with the stored state
 
-* the Naive.Leader will ask DynamicTraderSupervisor to start the Naive.Trader child process(es) (puede que acá exista un error pero en el diagrama)
-
 it’s advised to keep supervisor processes slim.
 
 when designing the supervision tree, it is important to check how is behaving using the observer of erlang
@@ -113,3 +111,5 @@ also I learn that is easy to modify locally the libraries code to detect issues,
 
 ## Chapter 6
 We pay fee for selling and for buying, for this `buy_down_interval`, so every first trade, the trader will take its price and calculate a decreased ammount, this interval should never be smaller than double the fee, the resulting price needs to be divisible by `tick_size`
+
+## Chapter 7
