@@ -67,10 +67,10 @@ defmodule Naive.Trader do
   end
 
   def handle_info(
-        %TradeEvent{buyer_order_id: _order_id},
+        %TradeEvent{buyer_order_id: order_id},
         %State{
           buy_order: %Binance.OrderResponse{
-            order_id: _order_id,
+            order_id: order_id,
             status: "FILLED"
           },
           sell_order: %Binance.OrderResponse{}
