@@ -67,6 +67,19 @@ defmodule Naive.Trader do
   end
 
   def handle_info(
+        %TradeEvent{buyer_order_id: _order_id},
+        %State{
+          buy_order: %Binance.OrderResponse{
+            order_id: _order_id,
+            status: "FILLED"
+          },
+          sell_order: %Binance.OrderResponse{}
+        } = state
+      ) do
+    {:noreply, state}
+  end
+
+  def handle_info(
         %TradeEvent{buyer_order_id: order_id},
         %State{
           symbol: symbol,
@@ -75,7 +88,7 @@ defmodule Naive.Trader do
               price: buy_price,
               order_id: order_id,
               orig_qty: quantity,
-              transac_time: timestamp
+              transact_time: timestamp
             } = buy_order,
           profit_interval: profit_interval,
           tick_size: tick_size
@@ -112,13 +125,31 @@ defmodule Naive.Trader do
 
   def handle_info(
         %TradeEvent{
-          seller_order_id: order_id,
-          quantity: quantity
+          seller_order_id: order_id
         },
-        %State{sell_order: %Binance.OrderResponse{order_id: order_id, orig_qty: quantity}} = state
+        %State{
+          symbol: symbol,
+          sell_order:
+            %Binance.OrderResponse{
+              order_id: order_id,
+              transact_time: timestamp
+            } = sell_order
+        } = state
       ) do
-    Logger.info("Trade finished, trader will now exit")
-    {:stop, :normal, state}
+    {:ok, %Binance.Order{} = current_sell_order} =
+      @binance_client.get_order(symbol, timestamp, order_id)
+
+    sell_order = %{sell_order | status: current_sell_order.status}
+
+    if sell_order.status == "FILLED" do
+      Logger.info("Trade finished, trader will now exit")
+      {:stop, :normal, state}
+    else
+      Logger.info("Sell order partially filled")
+      new_state = %{state | sell_order: sell_order}
+      Naive.Leader.notify(:trader_state_updated, new_state)
+      {:noreply, new_state}
+    end
   end
 
   def handle_info(%TradeEvent{}, state) do

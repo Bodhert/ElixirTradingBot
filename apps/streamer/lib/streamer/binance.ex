@@ -2,8 +2,9 @@ defmodule Streamer.Binance do
   @moduledoc """
   Binance streamer handler
   """
-  require Logger
   use WebSockex
+
+  require Logger
 
   @stream_endpoint "wss://testnet.binance.vision/ws/"
 
