@@ -113,3 +113,5 @@ also I learn that is easy to modify locally the libraries code to detect issues,
 We pay fee for selling and for buying, for this `buy_down_interval`, so every first trade, the trader will take its price and calculate a decreased ammount, this interval should never be smaller than double the fee, the resulting price needs to be divisible by `tick_size`
 
 ## Chapter 7
+
+## Chapter 8
