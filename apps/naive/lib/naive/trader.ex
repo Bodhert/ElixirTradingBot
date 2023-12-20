@@ -171,13 +171,16 @@ defmodule Naive.Trader do
     end
   end
 
-  def handle_info(%TradeEvent{price: current_price}, %State{
-        id: id,
-        symbol: symbol,
-        buy_order: %Binance.OrderResponse{price: buy_price},
-        rebuy_interval: rebuy_interval,
-        rebuy_notified: false
-      } = state) do
+  def handle_info(
+        %TradeEvent{price: current_price},
+        %State{
+          id: id,
+          symbol: symbol,
+          buy_order: %Binance.OrderResponse{price: buy_price},
+          rebuy_interval: rebuy_interval,
+          rebuy_notified: false
+        } = state
+      ) do
     if trigger_rebuy?(buy_price, current_price, rebuy_interval) do
       Logger.info("Rebuy triggered for #{symbol} by the trader(#{id})")
       new_state = %{state | rebuy_notified: true}
