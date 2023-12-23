@@ -1,5 +1,11 @@
 import Config
 
+config :naive, Naive.Repo,
+  database: "naive_repo",
+  username: "user",
+  password: "pass",
+  hostname: "localhost"
+
 config :logger,
   level: :debug
 
@@ -8,4 +14,20 @@ if File.exists?("config/secrets.exs") do
 end
 
 config :naive,
-  binance_client: BinanceMock
+  ecto_repos: [Naive.Repo],
+  binance_client: BinanceMock,
+  trading: %{
+    defaults: %{
+      chunks: 5,
+      budget: 1000,
+      buy_down_interval: "0.0001",
+      profit_interval: "-0.0012",
+      rebuy_interval: "0.001"
+    }
+  }
+
+config :naive, Naive.Repo,
+  database: "naive",
+  username: "postgres",
+  password: "hedgehogSecretPassword",
+  hostname: "localhost"
