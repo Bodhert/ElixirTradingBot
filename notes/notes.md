@@ -115,3 +115,6 @@ We pay fee for selling and for buying, for this `buy_down_interval`, so every fi
 ## Chapter 7
 
 ## Chapter 8
+
+## Chapter 11
+Circular dependencies will not allow the project to work

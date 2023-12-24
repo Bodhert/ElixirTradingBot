@@ -8,6 +8,7 @@ defmodule Streamer.Application do
   @impl true
   def start(_type, _args) do
     children = [
+      Streamer.Repo,
       {Phoenix.PubSub, name: Streamer.PubSub, adapter_name: Phoenix.PubSub.PG2}
     ]
 

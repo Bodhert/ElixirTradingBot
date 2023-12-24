@@ -1,5 +1,11 @@
 import Config
 
+config :streamer, Streamer.Repo,
+  database: "streamer",
+  username: "postgres",
+  password: "hedgehogSecretPassword",
+  hostname: "localhost"
+
 config :naive, Naive.Repo,
   database: "naive_repo",
   username: "user",
