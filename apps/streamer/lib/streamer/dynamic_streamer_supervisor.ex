@@ -1,4 +1,6 @@
 defmodule Streamer.DynamicStreamerSupervisor do
+  use DynamicSupervisor
+
   require Logger
 
   # import Ecto.Query, only: [from: 2]
@@ -6,7 +8,6 @@ defmodule Streamer.DynamicStreamerSupervisor do
   alias Streamer.Repo
   alias Streamer.Schema.Settings
 
-  use DynamicSupervisor
 
   def start_link(init_arg) do
     DynamicSupervisor.start_link(__MODULE__, init_arg, name: __MODULE__)
@@ -27,6 +28,20 @@ defmodule Streamer.DynamicStreamerSupervisor do
         Logger.warning("Streaming on #{symbol} already started")
         {:ok, _settings} = update_streaming_status(symbol, "on")
         {:ok, pid}
+    end
+  end
+
+  def stop_streaming(symbol) when is_binary(symbol) do
+    case get_pid(symbol) do
+      nil ->
+        Logger.warning("Streaming on #{symbol} already stopped")
+        {:ok, _settings} = update_streaming_status(symbol, "off")
+      pid ->
+        Logger.info("Stopping Streaming on #{symbol}")
+
+        :ok = DynamicSupervisor.terminate_child(Streamer.DynamicStreamerSupervisor, pid)
+
+        {:ok, _settings} = update_streaming_status(symbol, "off")
     end
   end
 
