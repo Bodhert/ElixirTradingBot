@@ -16,7 +16,7 @@ defmodule Streamer.DynamicStreamerSupervisor do
     DynamicSupervisor.init(strategy: :one_for_one)
   end
 
-  def auto_start_streaming do
+  def autostart_streaming do
     fetch_symbols_to_stream()
     |> Enum.map(&start_streaming/1)
   end
@@ -42,7 +42,7 @@ defmodule Streamer.DynamicStreamerSupervisor do
         {:ok, _settings} = update_streaming_status(symbol, "off")
 
       pid ->
-        Logger.info("Stopping Streaming on #{symbol}")
+        Logger.info("Stopping streaming on #{symbol}")
 
         :ok = DynamicSupervisor.terminate_child(Streamer.DynamicStreamerSupervisor, pid)
 

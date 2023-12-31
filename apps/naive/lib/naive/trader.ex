@@ -70,7 +70,7 @@ defmodule Naive.Trader do
     quantity = calculate_quantity(budget, price, step_size)
 
     Logger.info(
-      "The trader(#{id}) is placing BUY order" <>
+      "The trader(#{id}) is placing a BUY order " <>
         "for #{symbol} @ #{price}, quantity: #{quantity}"
     )
 
@@ -164,7 +164,7 @@ defmodule Naive.Trader do
       Logger.info("Trader(#{id}) finished trade cycle for #{symbol}")
       {:stop, :normal, state}
     else
-      Logger.info("Trader's(#{id} #{symbol}) SELL order got partially filled")
+      Logger.info("Trader's(#{id} #{symbol} SELL order got partially filled")
       new_state = %{state | sell_order: sell_order}
       Naive.Leader.notify(:trader_state_updated, new_state)
       {:noreply, new_state}
