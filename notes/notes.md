@@ -118,3 +118,6 @@ We pay fee for selling and for buying, for this `buy_down_interval`, so every fi
 
 ## Chapter 11
 Circular dependencies will not allow the project to work
+
+Task will be used to delegate some responsabilities from the dynamic supervisor
+task is used when no much comunication beetween procces is needed
