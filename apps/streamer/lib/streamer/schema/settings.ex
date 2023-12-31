@@ -1,4 +1,7 @@
 defmodule Streamer.Schema.Settings do
+  @moduledoc """
+  Schema that maps to Settings database table
+  """
   use Ecto.Schema
 
   alias Streamer.Schema.StreamingStatusEnum

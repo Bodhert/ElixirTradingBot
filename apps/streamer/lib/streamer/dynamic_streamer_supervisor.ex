@@ -1,4 +1,8 @@
 defmodule Streamer.DynamicStreamerSupervisor do
+  @moduledoc """
+  In charge of handle the logic for start, supervise and manage the Streamer
+  logic to each symbol
+  """
   use DynamicSupervisor
 
   require Logger

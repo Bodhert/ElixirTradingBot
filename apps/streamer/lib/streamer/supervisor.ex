@@ -1,4 +1,7 @@
 defmodule Streamer.Supervisor do
+  @moduledoc """
+  Supervise tree 'root' for streamer application
+  """
   use Supervisor
 
   def start_link(init_arg) do
