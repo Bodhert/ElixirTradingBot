@@ -3,11 +3,10 @@ defmodule Streamer.DynamicStreamerSupervisor do
 
   require Logger
 
-  # import Ecto.Query, only: [from: 2]
+  import Ecto.Query, only: [from: 2]
 
   alias Streamer.Repo
   alias Streamer.Schema.Settings
-
 
   def start_link(init_arg) do
     DynamicSupervisor.start_link(__MODULE__, init_arg, name: __MODULE__)
@@ -15,6 +14,11 @@ defmodule Streamer.DynamicStreamerSupervisor do
 
   def init(_init_arg) do
     DynamicSupervisor.init(strategy: :one_for_one)
+  end
+
+  def auto_start_streaming do
+    fetch_symbols_to_stream()
+    |> Enum.map(&start_streaming/1)
   end
 
   def start_streaming(symbol) when is_binary(symbol) do
@@ -36,6 +40,7 @@ defmodule Streamer.DynamicStreamerSupervisor do
       nil ->
         Logger.warning("Streaming on #{symbol} already stopped")
         {:ok, _settings} = update_streaming_status(symbol, "off")
+
       pid ->
         Logger.info("Stopping Streaming on #{symbol}")
 
@@ -50,7 +55,6 @@ defmodule Streamer.DynamicStreamerSupervisor do
   end
 
   defp update_streaming_status(symbol, status) when is_binary(symbol) and is_binary(status) do
-     symbol |> IO.inspect(label: "#{__MODULE__}: >>>>>> symbol <<<<<<\n")
     Repo.get_by(Settings, symbol: symbol)
     |> Ecto.Changeset.change(%{status: status})
     |> Repo.update()
@@ -58,5 +62,14 @@ defmodule Streamer.DynamicStreamerSupervisor do
 
   defp start_streamer(symbol) do
     DynamicSupervisor.start_child(__MODULE__, {Streamer.Binance, symbol})
+  end
+
+  defp fetch_symbols_to_stream do
+    Repo.all(
+      from(s in Settings,
+        where: s.status == "on",
+        select: s.symbol
+      )
+    )
   end
 end

@@ -11,6 +11,4 @@ defmodule Streamer.Schema.Settings do
 
     timestamps()
   end
-
-
 end
