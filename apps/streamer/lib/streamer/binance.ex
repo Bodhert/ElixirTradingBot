@@ -10,6 +10,7 @@ defmodule Streamer.Binance do
 
   def start_link(symbol) do
     lowercased_symbol = String.downcase(symbol)
+
     Logger.info(
       "Binance Streamer is connecting to websocket" <>
         "stream for #{symbol} trade events"
