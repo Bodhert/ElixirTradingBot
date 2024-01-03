@@ -9,8 +9,16 @@ defmodule Streamer.Binance do
   @stream_endpoint "wss://testnet.binance.vision/ws/"
 
   def start_link(symbol) do
-    symbol = String.downcase(symbol)
-    WebSockex.start_link("#{@stream_endpoint}#{symbol}@trade", __MODULE__, nil)
+    lowercased_symbol = String.downcase(symbol)
+
+    Logger.info(
+      "Binance Streamer is connecting to websocket" <>
+        "stream for #{symbol} trade events"
+    )
+
+    WebSockex.start_link("#{@stream_endpoint}#{lowercased_symbol}@trade", __MODULE__, nil,
+      name: :"#{__MODULE__}-#{symbol}"
+    )
   end
 
   def handle_frame({_type, msg}, state) do

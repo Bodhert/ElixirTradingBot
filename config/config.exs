@@ -1,5 +1,14 @@
 import Config
 
+config :streamer,
+  ecto_repos: [Streamer.Repo]
+
+config :streamer, Streamer.Repo,
+  database: "streamer",
+  username: "postgres",
+  password: "hedgehogSecretPassword",
+  hostname: "localhost"
+
 config :naive, Naive.Repo,
   database: "naive_repo",
   username: "user",
