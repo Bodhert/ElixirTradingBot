@@ -121,3 +121,6 @@ Circular dependencies will not allow the project to work
 
 Task will be used to delegate some responsabilities from the dynamic supervisor
 task is used when no much comunication beetween procces is needed
+
+## Chapter 12
+possible typo on the "autostrart_trading"
