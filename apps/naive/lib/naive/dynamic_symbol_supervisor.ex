@@ -16,6 +16,11 @@ defmodule Naive.DynamicSymbolSupervisor do
     DynamicSupervisor.init(strategy: :one_for_one)
   end
 
+  def autostart_trading do
+    fetch_symbols_to_trade()
+    |> Enum.map(&start_trading/1)
+  end
+
   def start_trading(symbol) when is_binary(symbol) do
     symbol = String.upcase(symbol)
 
@@ -29,6 +34,21 @@ defmodule Naive.DynamicSymbolSupervisor do
         Logger.warning("Trading on #{symbol} already started")
         {:ok, _settings} = update_trading_status(symbol, "on")
         {:ok, pid}
+    end
+  end
+
+  def stop_trading(symbol) when is_binary(symbol) do
+    symbol = String.upcase(symbol)
+    case get_pid(symbol) do
+      nil ->
+        Logger.warning("Trading on #{symbol} already stopped")
+        {:ok, _settings} = update_trading_status(symbol, "off")
+      pid ->
+        Logger.info("Stopping trading off #{symbol}")
+
+        :ok = DynamicSupervisor.terminate_child(Naive.DynamicSymbolSupervisor, pid)
+
+        {:ok, _settings} = update_trading_status(symbol, "off")
     end
   end
 
@@ -46,6 +66,16 @@ defmodule Naive.DynamicSymbolSupervisor do
     DynamicSupervisor.start_child(
       Naive.DynamicSymbolSupervisor,
       {Naive.SymbolSupervisor, symbol}
+    )
+  end
+
+  defp fetch_symbols_to_trade do
+    Repo.all(
+      from(
+        s in Settings,
+        where: s.status == "on",
+        select: s.symbol
+      )
     )
   end
 end
