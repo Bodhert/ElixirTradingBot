@@ -38,10 +38,6 @@ defmodule Naive.Leader do
     {:ok, %State{symbol: symbol}, {:continue, :start_traders}}
   end
 
-  def notify(:settings_updated, settings) do
-    GenServer.call(:"#{__MODULE__}-#{settings.symbol}", {:update_settings, settings})
-  end
-
   def notify(:trader_state_updated, trader_state) do
     GenServer.call(
       :"#{__MODULE__}-#{trader_state.symbol}",
@@ -54,6 +50,10 @@ defmodule Naive.Leader do
       :"#{__MODULE__}-#{trader_state.symbol}",
       {:rebuy_triggered, trader_state}
     )
+  end
+
+  def notify(:settings_updated, settings) do
+    GenServer.call(:"#{__MODULE__}-#{settings.symbol}", {:update_settings, settings})
   end
 
   def handle_continue(:start_traders, %{symbol: symbol} = state) do
@@ -103,8 +103,8 @@ defmodule Naive.Leader do
           else
             if settings.status == "shutdown" do
               Logger.warning(
-                "The leader won't start a new trader on #{symbol}" <>
-                  "as symbol is in the shutdown state"
+                "The leader won't start a new trader on #{symbol} " <>
+                  "as symbol is in the 'shutdown' state"
               )
 
               updated_traders
@@ -145,8 +145,8 @@ defmodule Naive.Leader do
         new_traders =
           if settings.status == "shutdown" do
             Logger.warning(
-              "The leader won't start a new trader on #{symbol}" <>
-                "as symbol is in the shutdown' state"
+              "The leader won't start a new trader on #{symbol} " <>
+                "as symbol is in shutdown state"
             )
 
             if length(traders) == 1 do

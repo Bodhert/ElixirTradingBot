@@ -46,7 +46,7 @@ defmodule Naive.DynamicSymbolSupervisor do
         {:ok, _settings} = update_trading_status(symbol, "off")
 
       pid ->
-        Logger.info("Stopping trading off #{symbol}")
+        Logger.info("Stopping trading of #{symbol}")
 
         :ok = DynamicSupervisor.terminate_child(Naive.DynamicSymbolSupervisor, pid)
 
@@ -70,7 +70,7 @@ defmodule Naive.DynamicSymbolSupervisor do
     end
   end
 
-  def get_pid(symbol) do
+  defp get_pid(symbol) do
     Process.whereis(:"Elixir.Naive.SymbolSupervisor-#{symbol}")
   end
 
