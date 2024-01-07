@@ -8,4 +8,6 @@ defmodule Naive do
   defdelegate start_trading(symbol), to: DynamicSymbolSupervisor
 
   defdelegate stop_trading(symbol), to: DynamicSymbolSupervisor
+
+  defdelegate shutdown_trading(symbol), to: DynamicSymbolSupervisor
 end
