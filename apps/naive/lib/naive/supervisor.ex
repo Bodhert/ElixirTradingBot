@@ -12,7 +12,7 @@ defmodule Naive.Supervisor do
   def init(_init_arg) do
     children = [
       Naive.DynamicSymbolSupervisor,
-      {Task, fn -> Naive.DynamicSymbolSupervisor.autostart_trading() end}
+      {Task, fn -> Naive.DynamicSymbolSupervisor.autostart_workers() end}
     ]
 
     Supervisor.init(children, strategy: :rest_for_one)
