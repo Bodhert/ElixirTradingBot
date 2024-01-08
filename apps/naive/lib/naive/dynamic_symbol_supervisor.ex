@@ -1,4 +1,7 @@
 defmodule Naive.DynamicSymbolSupervisor do
+  @moduledoc """
+  Dynamic symbol supervisor, in charge of supervise runtime created symbols
+  """
   use DynamicSupervisor
 
   require Logger

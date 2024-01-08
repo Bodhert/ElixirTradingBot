@@ -1,4 +1,8 @@
 defmodule Naive.Supervisor do
+  @moduledoc """
+   Base supervisor of the naive strategy, in charge of supervising
+   dynamic symbol supervisor and start autotrading task
+  """
   use Supervisor
 
   def start_link(init_arg) do
