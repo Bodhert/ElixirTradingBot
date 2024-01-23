@@ -11,7 +11,7 @@ defmodule Streamer.Supervisor do
   def init(_init_arg) do
     children = [
       Streamer.DynamicStreamerSupervisor,
-      {Task, fn -> Streamer.DynamicStreamerSupervisor.autostart_streaming() end}
+      {Task, fn -> Streamer.DynamicStreamerSupervisor.autostart_workers() end}
     ]
 
     Supervisor.init(children, strategy: :rest_for_one)

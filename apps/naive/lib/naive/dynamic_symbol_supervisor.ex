@@ -10,8 +10,15 @@ defmodule Naive.DynamicSymbolSupervisor do
 
   require Logger
 
+  def start_link(init_arg) do
+    Core.ServiceSupervisor.start_link(__MODULE__, init_arg, name: __MODULE__)
+  end
+
+  def init(_init_arg) do
+    Core.ServiceSupervisor.init(strategy: :one_for_one)
+  end
+
   def shutdown_worker(symbol) when is_binary(symbol) do
-    symbol = String.upcase(symbol)
 
     case get_pid(symbol) do
       nil ->
