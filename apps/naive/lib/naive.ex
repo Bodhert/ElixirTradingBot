@@ -5,9 +5,21 @@ defmodule Naive do
 
   alias Naive.DynamicSymbolSupervisor
 
-  defdelegate start_trading(symbol), to: DynamicSymbolSupervisor
+  def start_trading(symbol) do
+    symbol
+    |> String.upcase()
+    |> DynamicSymbolSupervisor.start_worker()
+  end
 
-  defdelegate stop_trading(symbol), to: DynamicSymbolSupervisor
+  def stop_trading(symbol) do
+    symbol
+    |> String.upcase()
+    |> DynamicSymbolSupervisor.stop_worker()
+  end
 
-  defdelegate shutdown_trading(symbol), to: DynamicSymbolSupervisor
+  def shutdown_trading(symbol) do
+    symbol
+    |> String.upcase()
+    |> DynamicSymbolSupervisor.shutdown_worker()
+  end
 end

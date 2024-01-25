@@ -8,12 +8,12 @@ defmodule Streamer do
   def start_streaming(symbol) do
     symbol
     |> String.upcase()
-    |> DynamicStreamerSupervisor.start_streaming()
+    |> DynamicStreamerSupervisor.start_worker()
   end
 
   def stop_streaming(symbol) do
     symbol
     |> String.upcase()
-    |> DynamicStreamerSupervisor.stop_streaming()
+    |> DynamicStreamerSupervisor.stop_worker()
   end
 end
