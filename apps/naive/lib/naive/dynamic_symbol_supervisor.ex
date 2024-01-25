@@ -19,7 +19,6 @@ defmodule Naive.DynamicSymbolSupervisor do
   end
 
   def shutdown_worker(symbol) when is_binary(symbol) do
-
     case get_pid(symbol) do
       nil ->
         Logger.warning("#{Naive.SymbolSupervisor} worker for #{symbol} already stopped")

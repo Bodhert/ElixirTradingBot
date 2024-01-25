@@ -68,7 +68,6 @@ defmodule Core.ServiceSupervisor do
   end
 
   def start_worker(symbol, repo, schema, module, worker_module) when is_binary(symbol) do
-
     case get_pid(worker_module, symbol) do
       nil ->
         Logger.info("Starting #{worker_module} worker for #{symbol}")
@@ -88,7 +87,6 @@ defmodule Core.ServiceSupervisor do
   end
 
   def stop_worker(symbol, repo, schema, module, worker_module) when is_binary(symbol) do
-
     case get_pid(worker_module, symbol) do
       nil ->
         Logger.warning("#{worker_module} worker for #{symbol} already stopped")
