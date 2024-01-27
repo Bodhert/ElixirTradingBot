@@ -1,5 +1,14 @@
 import Config
 
+config :data_warehouse,
+  ecto_repos: [DataWarehouse.Repo]
+
+config :data_warehouse, DataWarehouse.Repo,
+  database: "data_warehouse",
+  username: "postgres",
+  password: "hedgehogSecretPassword",
+  hostname: "localhost"
+
 config :streamer,
   ecto_repos: [Streamer.Repo]
 
@@ -8,19 +17,6 @@ config :streamer, Streamer.Repo,
   username: "postgres",
   password: "hedgehogSecretPassword",
   hostname: "localhost"
-
-config :naive, Naive.Repo,
-  database: "naive_repo",
-  username: "user",
-  password: "pass",
-  hostname: "localhost"
-
-config :logger,
-  level: :debug
-
-if File.exists?("config/secrets.exs") do
-  import_config("secrets.exs")
-end
 
 config :naive,
   ecto_repos: [Naive.Repo],
@@ -40,3 +36,11 @@ config :naive, Naive.Repo,
   username: "postgres",
   password: "hedgehogSecretPassword",
   hostname: "localhost"
+
+config :logger,
+  level: :debug
+
+
+if File.exists?("config/secrets.exs") do
+  import_config("secrets.exs")
+end
