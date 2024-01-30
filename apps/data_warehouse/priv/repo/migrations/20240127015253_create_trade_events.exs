@@ -13,7 +13,7 @@ defmodule DataWarehouse.Repo.Migrations.CreateTradeEvents do
       add(:buyer_order_id, :bigint)
       add(:seller_order_id, :bigint)
       add(:trade_time, :bigint)
-      add(:buyer_markert_maker, :bool)
+      add(:buyer_market_maker, :bool)
 
       timestamps()
     end
