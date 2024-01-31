@@ -124,3 +124,7 @@ task is used when no much comunication beetween procces is needed
 
 ## Chapter 12
 possible typo on the "autostrart_trading"
+
+
+## Chapter 14
+using `on_conflict: :replace_all` works as an upsert
