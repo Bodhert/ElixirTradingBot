@@ -128,3 +128,5 @@ possible typo on the "autostrart_trading"
 
 ## Chapter 14
 using `on_conflict: :replace_all` works as an upsert
+
+voy en 14.7.2 Redesign supervision using Registry
