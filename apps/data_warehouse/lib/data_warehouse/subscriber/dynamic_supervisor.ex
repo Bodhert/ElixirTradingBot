@@ -18,4 +18,48 @@ defmodule DataWarehouse.Subscriber.DynamicSupervisor do
   def init(_init_arg) do
     DynamicSupervisor.init(strategy: :one_for_one)
   end
+
+  def autostart_workers do
+    Repo.all(
+      from(s in SubscriberSettings,
+        where: s.status == "on",
+        select: s.topic
+      )
+    )
+    |> Enum.map(&start_child/1)
+  end
+
+  defp start_child(args) do
+    DynamicSupervisor.start_child(__MODULE__, {Worker, args})
+  end
+
+  def start_worker(topic) do
+    Logger.info("Starting storing data from #{topic} topic")
+    update_status(topic, "on")
+    start_child(topic)
+  end
+
+  defp update_status(topic, status) when is_binary(topic) and is_binary(status) do
+    %SubscriberSettings{
+      topic: topic,
+      status: status
+    }
+    |> Repo.insert(
+      on_conflict: :replace_all,
+      conflict_target: :topic
+    )
+  end
+
+  def stop_worker(topic) do
+    Logger.info("Stoping storing data from #{topic} topic")
+    update_status(topic, "off")
+    stop_child(topic)
+  end
+
+  defp stop_child(args) do
+    case Registry.lookup(@registry, args) do
+      [{_, pid}] -> DynamicSupervisor.terminate_child(__MODULE__, pid)
+      _ -> Logger.warning("unable to locate process assigned to #{inspect(args)}")
+    end
+  end
 end

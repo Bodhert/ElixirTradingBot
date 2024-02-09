@@ -1,8 +1,8 @@
 # Notes
-in chapter one they suggest that to be tested later, but we can add a binance mock 
+in chapter one they suggest that to be tested later, but we can add a binance mock
 account: https://testnet.binance.vision
 
-I will use a rule of only read one link depth, meaning that I will not matter if a links goes to another link, I will 
+I will use a rule of only read one link depth, meaning that I will not matter if a links goes to another link, I will
 read only the first link
 
 # Links
@@ -29,9 +29,9 @@ when using [vim](https://vi.stackexchange.com/questions/4307/multiple-cursors-at
 
 # Chapters
 ## Chapter 1
-Elixir is usually easy to understand, so when the documentation is light we must not be afraid of take a look of to the source code 
+Elixir is usually easy to understand, so when the documentation is light we must not be afraid of take a look of to the source code
 
-here we review the commands to handle some project organization like 
+here we review the commands to handle some project organization like
 * `iex -S mix`: run the project in 'interactive' mode
 * `mix deps.get`: bring dependencies from the mix file
 * `mix format`: organize the project with a 'linter'
@@ -55,10 +55,10 @@ the trader needs to known
 ![trade_cycle](resources/image.png)
 the trader will have 3 states:
 * without orders (sell or buy)
-* with a sell order placed 
-* with a buy order placed 
+* with a sell order placed
+* with a buy order placed
 
-in the mix.exs of the root directory, putting a dependency there does not mean that will be available for the apps inside the umbrella, configuration is needed, that said, there are some packages 
+in the mix.exs of the root directory, putting a dependency there does not mean that will be available for the apps inside the umbrella, configuration is needed, that said, there are some packages
 
 
 * new_trader: does not have any open order cause no `buy_order` is there
@@ -75,7 +75,7 @@ the function `calculate_sell_price/3` works in the next way:
 I have tested using the binance [testnet](https://testnet.binance.vision) and looks like it worked,
 
 I am comparing my branch with the remote with franton to see differences
-  
+
 
 ## Chapter 3
 
@@ -129,4 +129,4 @@ possible typo on the "autostrart_trading"
 ## Chapter 14
 using `on_conflict: :replace_all` works as an upsert
 
-voy en 14.7.2 Redesign supervision using Registry
+voy en 14.7.2 en el codigo el cual la ultima line es  @registry :subscriber_workers
