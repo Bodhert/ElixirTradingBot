@@ -9,7 +9,7 @@ defmodule DataWarehouse.Subscriber.Worker do
   end
 
   def start_link(topic) do
-    GenServer.start_link(__MODULE__, topic, name: :"#{__MODULE__}-#{topic}")
+    GenServer.start_link(__MODULE__, topic, name: via_tuple(topic))
   end
 
   def init(topic) do
@@ -31,16 +31,18 @@ defmodule DataWarehouse.Subscriber.Worker do
     data = order |> Map.from_struct()
 
     struct(DataWarehouse.Schema.Order, data)
-    |> Map.merge(
-      %{
-        original_quantity: order.orig_qty,
-        executed_quantity: order.executed_qty,
-        cummulative_quote_quantity: order.cummulative_quote_qty,
-        iceberg_quantity: order.iceberg_qty
-      }
-    )
+    |> Map.merge(%{
+      original_quantity: order.orig_qty,
+      executed_quantity: order.executed_qty,
+      cummulative_quote_quantity: order.cummulative_quote_qty,
+      iceberg_quantity: order.iceberg_qty
+    })
     |> DataWarehouse.Repo.insert(on_conflict: :replace_all, conflict_target: :order_id)
 
     {:noreply, state}
+  end
+
+  defp via_tuple(topic) do
+    {:via, Registry, {:subscribe_workers, topic}}
   end
 end
