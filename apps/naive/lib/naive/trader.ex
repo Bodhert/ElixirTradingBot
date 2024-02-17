@@ -258,13 +258,11 @@ defmodule Naive.Trader do
 
     Binance.Order
     |> struct(data)
-    |> Map.merge(
-      %{
-        cummulative_quote_qty: "0.00000000",
-        stop_price: "0.00000000",
-        iceberg_qty: "0.00000000",
-        is_working: true
-      }
-    )
+    |> Map.merge(%{
+      cummulative_quote_qty: "0.00000000",
+      stop_price: "0.00000000",
+      iceberg_qty: "0.00000000",
+      is_working: true
+    })
   end
 end
