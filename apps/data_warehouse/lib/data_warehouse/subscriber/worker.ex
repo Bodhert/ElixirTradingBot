@@ -43,6 +43,6 @@ defmodule DataWarehouse.Subscriber.Worker do
   end
 
   defp via_tuple(topic) do
-    {:via, Registry, {:subscribe_workers, topic}}
+    {:via, Registry, {:subscriber_workers, topic}}
   end
 end

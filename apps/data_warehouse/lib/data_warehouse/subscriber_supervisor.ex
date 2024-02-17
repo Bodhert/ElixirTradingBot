@@ -1,4 +1,4 @@
-defmodule DataWarehouse.Subscriber.SubscriberSupervisor do
+defmodule DataWarehouse.SubscriberSupervisor do
   use Supervisor
 
   alias DataWarehouse.Subscriber.DynamicSupervisor
@@ -13,7 +13,7 @@ defmodule DataWarehouse.Subscriber.SubscriberSupervisor do
     children = [
       {Registry, [keys: :unique, name: @registry]},
       DynamicSupervisor,
-      {Task, fn DynamicSupervisor.autostart_workers() -> nil end}
+      {Task, fn -> DynamicSupervisor.autostart_workers() end}
     ]
 
     Supervisor.init(children, strategy: :rest_for_one)

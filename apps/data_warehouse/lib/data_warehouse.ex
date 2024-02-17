@@ -3,16 +3,23 @@ defmodule DataWarehouse do
   Documentation for `DataWarehouse`.
   """
 
-  @doc """
-  Hello world.
+  alias DataWarehouse.Subscriber.DynamicSupervisor
 
-  ## Examples
+  def start_storing(stream, symbol) do
+    stream
+    |> to_topic(symbol)
+    |> DynamicSupervisor.start_worker()
+  end
 
-      iex> DataWarehouse.hello()
-      :world
+  def stop_storing(stream, symbol) do
+    stream
+    |> to_topic(symbol)
+    |> DynamicSupervisor.stop_worker()
+  end
 
-  """
-  def hello do
-    :world
+  defp to_topic(stream, symbol) do
+    [stream, symbol]
+    |> Enum.map(&String.upcase/1)
+    |> Enum.join(":")
   end
 end

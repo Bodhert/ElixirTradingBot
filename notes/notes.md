@@ -129,4 +129,4 @@ possible typo on the "autostrart_trading"
 ## Chapter 14
 using `on_conflict: :replace_all` works as an upsert
 
-voy en 14.7.2 en el codigo el cual la ultima line es  @registry :subscriber_workers
+voy en 14.7.4
