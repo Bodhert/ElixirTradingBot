@@ -1,4 +1,7 @@
 defmodule DataWarehouse.Schema.TradeEvent do
+  @moduledoc """
+  Schema for storing the trade event
+  """
   use Ecto.Schema
 
   @primary_key {:id, :binary_id, autogenerate: true}

@@ -1,4 +1,7 @@
 defmodule DataWarehouse.SubscriberSupervisor do
+  @moduledoc """
+  Data Warehouse Supervisor
+  """
   use Supervisor
 
   alias DataWarehouse.Subscriber.DynamicSupervisor

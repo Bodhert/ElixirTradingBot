@@ -1,4 +1,7 @@
 defmodule DataWarehouse.Subscriber.Worker do
+  @moduledoc """
+    Worker for the subscriber
+  """
   use GenServer
 
   require Logger

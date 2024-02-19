@@ -1,4 +1,7 @@
 defmodule DataWarehouse.Subscriber.DynamicSupervisor do
+  @moduledoc """
+  Subscriber Dynamic Supervisor
+  """
   use DynamicSupervisor
 
   require Logger
