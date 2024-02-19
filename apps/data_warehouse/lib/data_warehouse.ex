@@ -18,7 +18,6 @@ defmodule DataWarehouse do
   end
 
   defp to_topic(stream, symbol) do
-    [stream, symbol]
-    |> Enum.map_join(":", &String.upcase/1)
+    Enum.map_join([stream, symbol], ":", &String.upcase/1)
   end
 end
