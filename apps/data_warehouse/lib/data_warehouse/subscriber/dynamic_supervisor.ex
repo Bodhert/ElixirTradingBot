@@ -43,6 +43,7 @@ defmodule DataWarehouse.Subscriber.DynamicSupervisor do
     update_status(topic, "off")
     stop_child(topic)
   end
+
   defp update_status(topic, status) when is_binary(topic) and is_binary(status) do
     %SubscriberSettings{
       topic: topic,
@@ -57,7 +58,6 @@ defmodule DataWarehouse.Subscriber.DynamicSupervisor do
   defp start_child(args) do
     DynamicSupervisor.start_child(__MODULE__, {Worker, args})
   end
-
 
   defp stop_child(args) do
     case Registry.lookup(@registry, args) do
