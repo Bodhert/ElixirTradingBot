@@ -7,6 +7,9 @@ defmodule DataWarehouse.Subscriber.Worker do
   require Logger
 
   defmodule State do
+    @moduledoc """
+    State module struct
+    """
     @enforce_keys [:topic]
     defstruct [:topic]
   end
