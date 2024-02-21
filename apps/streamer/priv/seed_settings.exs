@@ -18,7 +18,7 @@ base_settings = %{
   updated_at: timestamp
 }
 
-Logger.info("Inserting default settings for symbol")
+Logger.info("Inserting default settings for symbols")
 
 maps = symbols |> Enum.map(&(%{base_settings | symbol: &1["symbol"]}))
 
