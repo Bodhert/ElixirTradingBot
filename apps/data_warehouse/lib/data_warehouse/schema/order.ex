@@ -1,4 +1,7 @@
 defmodule DataWarehouse.Schema.Order do
+  @moduledoc """
+  Order schema
+  """
   use Ecto.Schema
 
   @primary_key {:order_id, :integer, autogenerate: false}
