@@ -6,8 +6,10 @@ defmodule Naive.SymbolSupervisor do
 
   require Logger
 
+  @registry :naive_symbol_supervisors
+
   def start_link(symbol) do
-    Supervisor.start_link(__MODULE__, symbol, name: :"#{__MODULE__}-#{symbol}")
+    Supervisor.start_link(__MODULE__, symbol, name: via_tuple(symbol))
   end
 
   def init(symbol) do
@@ -23,5 +25,9 @@ defmodule Naive.SymbolSupervisor do
       ],
       strategy: :one_for_all
     )
+  end
+
+  defp via_tuple(symbol) do
+    {:via, Registry, {@registry, symbol}}
   end
 end

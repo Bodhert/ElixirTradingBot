@@ -37,8 +37,7 @@ defmodule Streamer.MixProject do
       {:phoenix_pubsub, "~> 2.0"},
       {:sobelow, "~> 0.13", only: [:dev, :test], runtime: false},
       {:postgrex, ">= 0.0.0"},
-      {:websockex, "~> 0.4"},
-      {:core, in_umbrella: true}
+      {:websockex, "~> 0.4"}
     ]
   end
 end
