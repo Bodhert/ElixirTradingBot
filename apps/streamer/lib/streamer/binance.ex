@@ -7,6 +7,7 @@ defmodule Streamer.Binance do
   require Logger
 
   @stream_endpoint "wss://testnet.binance.vision/ws/"
+  @registry :binance_streamers
 
   def start_link(symbol) do
     Logger.info(
@@ -55,6 +56,6 @@ defmodule Streamer.Binance do
   end
 
   defp via_tuple(symbol) do
-    {:via, Registry, {:binance_streamers, symbol}}
+    {:via, Registry, {@registry, symbol}}
   end
 end
