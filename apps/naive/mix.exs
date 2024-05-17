@@ -37,7 +37,8 @@ defmodule Naive.MixProject do
       {:phoenix_pubsub, "~> 2.0"},
       {:postgrex, ">= 0.0.0"},
       {:sobelow, "~> 0.13", only: [:dev, :test], runtime: false},
-      {:streamer, in_umbrella: true}
+      {:streamer, in_umbrella: true},
+      {:data_warehouse, in_umbrella: true, only: :test}
     ]
   end
 end
