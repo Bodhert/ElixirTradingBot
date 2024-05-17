@@ -1,4 +1,7 @@
 defmodule DataWarehouse.Publisher do
+  @moduledoc """
+  Helper module for interactive backtesting
+  """
   use Task
 
   import Ecto.Query, only: [from: 2]
@@ -24,7 +27,7 @@ defmodule DataWarehouse.Publisher do
           order_by: trade_event.trade_time
         )
         |> DataWarehouse.Repo.stream()
-        |> Enum.with_index()
+        |> Stream.with_index()
         |> Enum.map(fn {row, index} ->
           :timer.sleep(interval)
 
