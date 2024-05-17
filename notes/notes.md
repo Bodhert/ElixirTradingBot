@@ -128,3 +128,6 @@ possible typo on the "autostrart_trading"
 
 ## Chapter 14
 using `on_conflict: :replace_all` works as an upsert
+
+## Chapter 15
+there is a typo in the beggining of the diagram called "DastaWarehouse.Publisher"
