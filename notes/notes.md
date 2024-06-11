@@ -131,3 +131,7 @@ using `on_conflict: :replace_all` works as an upsert
 
 ## Chapter 15
 there is a typo in the beggining of the diagram called "DastaWarehouse.Publisher"
+
+## Chapter 16
+compile env does not work
+typo in palced

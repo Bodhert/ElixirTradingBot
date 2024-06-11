@@ -15,7 +15,8 @@ defmodule Streamer.MixProject do
       xref: [exclude: [Naive]],
       elixirc_options: [
         warnings_as_errors: true
-      ]
+      ],
+      aliases: aliases()
     ]
   end
 
@@ -30,7 +31,8 @@ defmodule Streamer.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:binance, "~> 1.0"},
+      {:binance_mock, in_umbrella: true},
+      {:core, in_umbrella: true},
       {:ecto_sql, "~> 3.0"},
       {:ecto_enum, "~> 1.4"},
       {:jason, "~> 1.2"},
@@ -38,6 +40,12 @@ defmodule Streamer.MixProject do
       {:sobelow, "~> 0.13", only: [:dev, :test], runtime: false},
       {:postgrex, ">= 0.0.0"},
       {:websockex, "~> 0.4"}
+    ]
+  end
+
+  defp aliases() do
+    [
+      seed: ["run priv/seed_settings.exs"]
     ]
   end
 end

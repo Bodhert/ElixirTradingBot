@@ -2,7 +2,7 @@ defmodule NaiveTest do
   use ExUnit.Case
   alias DataWarehouse.Schema.Order
   alias Naive.Schema.Settings, as: TradingSettings
-  alias Streamer.Binance.TradeEvent
+  alias Core.Struct.TradeEvent
 
   import Ecto.Query, only: [from: 2]
 
@@ -29,8 +29,7 @@ defmodule NaiveTest do
     :timer.sleep(5000)
 
     [
-      # TODO: typo in the book in palced
-      # buy order palced @ 0.4307
+      # buy order placed @ 0.4307
       generate_event(1, "0.43183010", "213.10000000"),
       generate_event(2, "0.43183020", "56.10000000"),
       generate_event(3, "0.43183030", "12.10000000"),
@@ -39,7 +38,7 @@ defmodule NaiveTest do
       # event below the expected buy price
       # it should trigger fake fill event for placed buy order
       # TODO: same here
-      # and palce sell order @ 0.4319
+      # and placed sell order @ 0.4319
       generate_event(5, "0.43065", "126.53000000"),
       # event below the expected sell price
       generate_event(6, "0.43189", "26.18500000"),
@@ -53,7 +52,7 @@ defmodule NaiveTest do
     ]
     |> Enum.each(fn event ->
       Phoenix.PubSub.broadcast(
-        Streamer.PubSub,
+        Core.PubSub,
         "TRADE_EVENTS:#{symbol}",
         event
       )
@@ -78,7 +77,7 @@ defmodule NaiveTest do
   end
 
   defp generate_event(id, price, quantity) do
-     %TradeEvent{
+    %TradeEvent{
       event_type: "trade",
       event_time: 1_000 + id * 10,
       symbol: "XRPUSDT",

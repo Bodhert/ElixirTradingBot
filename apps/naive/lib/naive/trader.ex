@@ -7,7 +7,7 @@ defmodule Naive.Trader do
 
   require Logger
 
-  alias Streamer.Binance.TradeEvent
+  alias Core.Struct.TradeEvent
 
   @binance_client Application.compile_env(:naive, :binance_client)
   defmodule State do
@@ -49,7 +49,7 @@ defmodule Naive.Trader do
 
     Logger.info("Initializing new trader(#{id}) for #{symbol}")
 
-    Phoenix.PubSub.subscribe(Streamer.PubSub, "TRADE_EVENTS:#{symbol}")
+    Phoenix.PubSub.subscribe(Core.PubSub, "TRADE_EVENTS:#{symbol}")
 
     {:ok, state}
   end
@@ -116,6 +116,8 @@ defmodule Naive.Trader do
       ) do
     {:ok, %Binance.Order{} = current_buy_order} =
       @binance_client.get_order(symbol, timestamp, order_id)
+
+    :ok = broadcast_order(current_buy_order)
 
     buy_order = %{buy_order | status: current_buy_order.status}
 
@@ -250,7 +252,7 @@ defmodule Naive.Trader do
   end
 
   defp broadcast_order(%Binance.Order{} = order) do
-    Phoenix.PubSub.broadcast(Streamer.PubSub, "ORDERS:#{order.symbol}", order)
+    Phoenix.PubSub.broadcast(Core.PubSub, "ORDERS:#{order.symbol}", order)
   end
 
   defp convert_to_order(%Binance.OrderResponse{} = response) do

@@ -14,9 +14,9 @@ defmodule DataWarehouse.Publisher do
   def run(%{type: :trade_events, symbol: symbol, from: from, to: to, interval: interval}) do
     symbol = String.upcase(symbol)
 
-    from_ts = "#{from}T00:00:00.00Z" |> convert_to_ms()
+    from_ts = "#{from}T00:00:00.000Z" |> convert_to_ms()
 
-    to_ts = "#{to}T23:59:59.00Z" |> convert_to_ms()
+    to_ts = "#{to}T23:59:59.000Z" |> convert_to_ms()
 
     DataWarehouse.Repo.transaction(
       fn ->
@@ -46,10 +46,10 @@ defmodule DataWarehouse.Publisher do
 
   defp publish_trade_event(%DataWarehouse.Schema.TradeEvent{} = trade_event) do
     new_trade_event =
-      struct(Streamer.Binance.TradeEvent, trade_event |> Map.to_list())
+      struct(Core.Struct.TradeEvent, trade_event |> Map.to_list())
 
     Phoenix.PubSub.broadcast(
-      Streamer.PubSub,
+      Core.PubSub,
       "TRADE_EVENTS:#{trade_event.symbol}",
       new_trade_event
     )
