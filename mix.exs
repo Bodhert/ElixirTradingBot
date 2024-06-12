@@ -7,7 +7,8 @@ defmodule Hedgehog.MixProject do
       version: "0.1.0",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
-      aliases: aliases()
+      aliases: aliases(),
+      consolidate_protocols: Mix.env() == :prod
     ]
   end
 
@@ -30,7 +31,17 @@ defmodule Hedgehog.MixProject do
 
   defp aliases do
     [
-      sobelow: ["cmd mix sobelow"]
+      sobelow: ["cmd mix sobelow"],
+      setup: [
+        "ecto.drop",
+        "ecto.create",
+        "ecto.migrate",
+        "cmd --app naive --app streamer mix seed"
+      ],
+      "test.integration": [
+        "setup",
+        "test --only integration"
+      ]
     ]
   end
 end

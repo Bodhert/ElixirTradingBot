@@ -1,5 +1,8 @@
 import Config
 
+config :binance_mock,
+  use_cached_exchange_info: false
+
 config :data_warehouse,
   ecto_repos: [DataWarehouse.Repo]
 
@@ -10,6 +13,7 @@ config :data_warehouse, DataWarehouse.Repo,
   hostname: "localhost"
 
 config :streamer,
+  binance_client: BinanceMock,
   ecto_repos: [Streamer.Repo]
 
 config :streamer, Streamer.Repo,
@@ -43,3 +47,5 @@ config :logger,
 if File.exists?("config/secrets.exs") do
   import_config("secrets.exs")
 end
+
+import_config "#{config_env()}.exs"

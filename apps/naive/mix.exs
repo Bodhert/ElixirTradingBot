@@ -14,7 +14,8 @@ defmodule Naive.MixProject do
       deps: deps(),
       elixirc_options: [
         warnings_as_errors: true
-      ]
+      ],
+      aliases: aliases()
     ]
   end
 
@@ -31,13 +32,20 @@ defmodule Naive.MixProject do
     [
       {:binance, "~> 1.0"},
       {:binance_mock, in_umbrella: true},
+      {:core, in_umbrella: true},
+      {:data_warehouse, in_umbrella: true, only: :test},
       {:decimal, "~> 2.0"},
       {:ecto_sql, "~> 3.0"},
       {:ecto_enum, "~> 1.4"},
       {:phoenix_pubsub, "~> 2.0"},
       {:postgrex, ">= 0.0.0"},
-      {:sobelow, "~> 0.13", only: [:dev, :test], runtime: false},
-      {:streamer, in_umbrella: true}
+      {:sobelow, "~> 0.13", only: [:dev, :test], runtime: false}
+    ]
+  end
+
+  defp aliases() do
+    [
+      seed: ["run priv/seed_settings.exs"]
     ]
   end
 end

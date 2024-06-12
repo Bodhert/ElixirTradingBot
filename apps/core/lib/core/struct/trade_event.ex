@@ -1,4 +1,4 @@
-defmodule Streamer.Binance.TradeEvent do
+defmodule Core.Struct.TradeEvent do
   @moduledoc """
   Trade event struct
   """
