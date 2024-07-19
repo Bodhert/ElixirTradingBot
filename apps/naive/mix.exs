@@ -15,7 +15,14 @@ defmodule Naive.MixProject do
       elixirc_options: [
         warnings_as_errors: true
       ],
-      aliases: aliases()
+      aliases: aliases(),
+      elixirc_paths: elixirc_paths(Mix.env())
+    ]
+  end
+
+  defp aliases() do
+    [
+      seed: ["run priv/seed_settings.exs"]
     ]
   end
 
@@ -39,13 +46,11 @@ defmodule Naive.MixProject do
       {:ecto_enum, "~> 1.4"},
       {:phoenix_pubsub, "~> 2.0"},
       {:postgrex, ">= 0.0.0"},
-      {:sobelow, "~> 0.13", only: [:dev, :test], runtime: false}
+      {:sobelow, "~> 0.13", only: [:dev, :test], runtime: false},
+      {:mox, "~> 1.0", only: [:test, :integration]}
     ]
   end
 
-  defp aliases() do
-    [
-      seed: ["run priv/seed_settings.exs"]
-    ]
-  end
+  defp elixirc_paths(:test), do: ["test/support", "lib"]
+  defp elixirc_paths(_), do: ["lib"]
 end

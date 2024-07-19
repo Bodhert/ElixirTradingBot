@@ -27,10 +27,10 @@ defmodule BinanceMock.MixProject do
   defp deps do
     [
       {:binance, "~> 1.0"},
-      {:decimal, "~> 2.0"},
-      {:phoenix_pubsub, "~> 2.0"},
       {:core, in_umbrella: true},
-      {:jason, "~> 1.2"}
+      {:decimal, "~> 2.0"},
+      {:jason, "~> 1.2"},
+      {:phoenix_pubsub, "~> 2.0"}
     ]
   end
 end

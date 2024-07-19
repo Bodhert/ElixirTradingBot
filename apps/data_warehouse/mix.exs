@@ -27,11 +27,11 @@ defmodule DataWarehouse.MixProject do
   defp deps do
     [
       {:binance, "~> 1.0"},
+      {:core, in_umbrella: true},
       {:ecto_sql, "~> 3.0"},
       {:ecto_enum, "~> 1.4"},
       {:phoenix_pubsub, "~> 2.0"},
-      {:postgrex, ">= 0.0.0"},
-      {:core, in_umbrella: true}
+      {:postgrex, ">= 0.0.0"}
     ]
   end
 end

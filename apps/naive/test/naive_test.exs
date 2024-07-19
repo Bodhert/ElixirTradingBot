@@ -1,5 +1,6 @@
 defmodule NaiveTest do
   use ExUnit.Case
+  doctest Naive
   alias DataWarehouse.Schema.Order
   alias Naive.Schema.Settings, as: TradingSettings
   alias Core.Struct.TradeEvent
@@ -7,7 +8,7 @@ defmodule NaiveTest do
   import Ecto.Query, only: [from: 2]
 
   @tag integration: true
-  test "Naive trader full trade(buy + sell)" do
+  test "Naive trader full trade(buy + sell) test" do
     symbol = "XRPUSDT"
 
     settings = [
@@ -25,7 +26,7 @@ defmodule NaiveTest do
 
     Naive.start_trading(symbol)
 
-    DataWarehouse.start_storing("ORDERS", symbol)
+    DataWarehouse.start_storing("ORDERS", "XRPUSDT")
     :timer.sleep(5000)
 
     [
@@ -37,7 +38,6 @@ defmodule NaiveTest do
       generate_event(4, "0.4307", "38.92000000"),
       # event below the expected buy price
       # it should trigger fake fill event for placed buy order
-      # TODO: same here
       # and placed sell order @ 0.4319
       generate_event(5, "0.43065", "126.53000000"),
       # event below the expected sell price

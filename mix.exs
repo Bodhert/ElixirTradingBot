@@ -8,7 +8,10 @@ defmodule Hedgehog.MixProject do
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       aliases: aliases(),
-      consolidate_protocols: Mix.env() == :prod
+      consolidate_protocols: Mix.env() == :prod,
+      preferred_cli_env: [
+        "test.unit": :test
+      ]
     ]
   end
 
@@ -41,6 +44,9 @@ defmodule Hedgehog.MixProject do
       "test.integration": [
         "setup",
         "test --only integration"
+      ],
+      "test.unit": [
+        "test --only unit --no-start"
       ]
     ]
   end
