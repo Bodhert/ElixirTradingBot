@@ -7,8 +7,10 @@ defmodule Naive.Leader do
   alias Naive.Repo
   alias Naive.Schema.Settings
   alias Naive.Trader
-
   require Logger
+
+  @type event_type :: atom
+  @callback notify(event_type, %Trader.State{}) :: :ok
 
   @binance_client Application.compile_env(:naive, :binance_client)
 

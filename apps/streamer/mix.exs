@@ -12,11 +12,16 @@ defmodule Streamer.MixProject do
       elixir: "~> 1.14",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
-      xref: [exclude: [Naive]],
       elixirc_options: [
         warnings_as_errors: true
       ],
       aliases: aliases()
+    ]
+  end
+
+  defp aliases() do
+    [
+      seed: ["run priv/seed_settings.exs"]
     ]
   end
 
@@ -40,12 +45,6 @@ defmodule Streamer.MixProject do
       {:sobelow, "~> 0.13", only: [:dev, :test], runtime: false},
       {:postgrex, ">= 0.0.0"},
       {:websockex, "~> 0.4"}
-    ]
-  end
-
-  defp aliases() do
-    [
-      seed: ["run priv/seed_settings.exs"]
     ]
   end
 end
