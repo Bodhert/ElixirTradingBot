@@ -135,3 +135,9 @@ there is a typo in the beggining of the diagram called "DastaWarehouse.Publisher
 ## Chapter 16
 compile env does not work
 typo in palced
+
+## Chapter 18
+While refactoring I learned that if in the params I need to match a lot of things 
+it can lead to smelly code, so refactoring is probably needed.
+
+when making descicions we can abstract
