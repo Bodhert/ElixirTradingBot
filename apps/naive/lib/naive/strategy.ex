@@ -1,4 +1,7 @@
 defmodule Naive.Strategy do
+  @moduledoc """
+  Module in charge of making and executing descicions
+  """
   alias Core.Struct.TradeEvent
   alias Naive.Trader.State
 
