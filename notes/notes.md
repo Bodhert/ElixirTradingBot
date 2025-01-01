@@ -141,3 +141,11 @@ While refactoring I learned that if in the params I need to match a lot of thing
 it can lead to smelly code, so refactoring is probably needed.
 
 when making descicions we can abstract
+
+## Chapter 19
+
+the main idea is to keep the code simply, and only use process when needed.
+
+the procces must not be used for code organization.
+
+

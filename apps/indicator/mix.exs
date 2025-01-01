@@ -1,6 +1,5 @@
 defmodule Indicator.MixProject do
   use Mix.Project
-  alias Core.Struct.TradeEvent
 
   def project do
     [

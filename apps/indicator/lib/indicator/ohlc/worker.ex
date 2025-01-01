@@ -6,20 +6,20 @@ defmodule Indicator.Ohlc.Worker do
   @logger Application.compile_env(:core, :logger)
   @pubsub_client Application.compile_env(:core, :pubsub_client)
 
-  def start_link({symbol, duration}) do
-    GenServer.start_link(__MODULE__, {symbol, duration})
+  def start_link(symbol) do
+    GenServer.start_link(__MODULE__, symbol)
   end
 
-  def init({symbol, duration}) do
+  def init(symbol) do
     symbol = String.upcase(symbol)
-    Logger.info("Initializing a new OHLC worker (#{duration} minutes) for #{symbol}")
+    Logger.debug("Initializing a new OHLC worker for #{symbol}")
 
     @pubsub_client.subscribe(
       Core.PubSub,
       "TRADE_EVENTS:#{symbol}"
     )
 
-    {:ok, {symbol, duration}}
+    {:ok, symbol}
   end
 
   def handle_info(%TradeEvent{} = trade_event, ohlc) do
