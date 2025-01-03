@@ -12,7 +12,7 @@ defmodule Indicator.Ohlc.Worker do
 
   def init(symbol) do
     symbol = String.upcase(symbol)
-    Logger.debug("Initializing a new OHLC worker for #{symbol}")
+    @logger.debug("Initializing a new OHLC worker for #{symbol}")
 
     @pubsub_client.subscribe(
       Core.PubSub,
