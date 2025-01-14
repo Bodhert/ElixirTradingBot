@@ -3,7 +3,6 @@ defmodule Naive.Strategy do
   Module in charge of making and executing descicions
   """
   alias Core.Struct.TradeEvent
-  alias Naive.Trader.State
 
   require Logger
 
@@ -12,14 +11,41 @@ defmodule Naive.Strategy do
   @logger Application.compile_env(:core, :logger)
   @pubsub_client Application.compile_env(:core, :pubsub_client)
 
-  def execute(%TradeEvent{} = trade_event, %State{} = state) do
+  defmodule Position do
+    @enforce_keys [
+      :id,
+      :symbol,
+      :budget,
+      :buy_down_interval,
+      :profit_interval,
+      :rebuy_interval,
+      :rebuy_notified,
+      :tick_size,
+      :step_size
+    ]
+    defstruct [
+      :id,
+      :symbol,
+      :budget,
+      :buy_order,
+      :sell_order,
+      :buy_down_interval,
+      :profit_interval,
+      :rebuy_interval,
+      :rebuy_notified,
+      :tick_size,
+      :step_size
+    ]
+  end
+
+  def execute(%TradeEvent{} = trade_event, %Position{} = state) do
     generate_decision(trade_event, state)
     |> execute_decision(state)
   end
 
   def generate_decision(
         %TradeEvent{price: price},
-        %State{
+        %Position{
           budget: budget,
           buy_order: nil,
           buy_down_interval: buy_down_interval,
@@ -35,7 +61,7 @@ defmodule Naive.Strategy do
 
   def generate_decision(
         %TradeEvent{buyer_order_id: order_id},
-        %State{
+        %Position{
           buy_order: %Binance.OrderResponse{
             order_id: order_id,
             status: "FILLED"
@@ -49,7 +75,7 @@ defmodule Naive.Strategy do
 
   def generate_decision(
         %TradeEvent{buyer_order_id: order_id},
-        %State{
+        %Position{
           buy_order: %Binance.OrderResponse{
             order_id: order_id
           },
@@ -62,7 +88,7 @@ defmodule Naive.Strategy do
 
   def generate_decision(
         %TradeEvent{},
-        %State{
+        %Position{
           buy_order: %Binance.OrderResponse{
             status: "FILLED",
             price: buy_price
@@ -79,7 +105,7 @@ defmodule Naive.Strategy do
 
   def generate_decision(
         %TradeEvent{},
-        %State{
+        %Position{
           sell_order: %Binance.OrderResponse{status: "FILLED"}
         }
       ) do
@@ -90,7 +116,7 @@ defmodule Naive.Strategy do
         %TradeEvent{
           seller_order_id: order_id
         },
-        %State{
+        %Position{
           sell_order: %Binance.OrderResponse{
             order_id: order_id
           }
@@ -101,7 +127,7 @@ defmodule Naive.Strategy do
 
   def generate_decision(
         %TradeEvent{price: current_price},
-        %State{
+        %Position{
           buy_order: %Binance.OrderResponse{price: buy_price},
           rebuy_interval: rebuy_interval,
           rebuy_notified: false
@@ -162,14 +188,14 @@ defmodule Naive.Strategy do
 
   defp execute_decision(
          {:place_buy_order, price, quantity},
-         %State{
+         %Position{
            id: id,
            symbol: symbol
-         } = state
+         } = position
        ) do
     @logger.info(
-      "The trader(#{id}) is placing a BUY order " <>
-        "for #{symbol} @ #{price}, quantity: #{quantity}"
+      "Position (#{symbol}/#{id}: " <>
+        "Placing BUY order @ #{price}, quantity: #{quantity}"
     )
 
     {:ok, %Binance.OrderResponse{} = order} =
@@ -177,25 +203,25 @@ defmodule Naive.Strategy do
 
     :ok = broadcast_order(order)
 
-    new_state = %{state | buy_order: order}
-    @leader.notify(:trader_state_updated, new_state)
+    new_position = %{position | buy_order: order}
+    @leader.notify(:trader_state_updated, new_position)
 
-    {:ok, new_state}
+    {:ok, new_position}
   end
 
   defp execute_decision(
          {:place_sell_order, sell_price},
-         %State{
+         %Position{
            id: id,
            symbol: symbol,
            buy_order: %Binance.OrderResponse{
              orig_qty: quantity
            }
-         } = state
+         } = position
        ) do
     @logger.info(
-      "The trader(#{id}) is placing a SELL order for " <>
-        "#{symbol} @ #{sell_price}, quantity: #{quantity}."
+      "Position (#{symbol}/#{id}): the BUY order is now filled" <>
+        "Placing a Sell order @ #{sell_price}, quantity: #{quantity}"
     )
 
     {:ok, %Binance.OrderResponse{} = order} =
@@ -203,16 +229,16 @@ defmodule Naive.Strategy do
 
     :ok = broadcast_order(order)
 
-    new_state = %{state | sell_order: order}
+    new_position = %{position | sell_order: order}
 
-    @leader.notify(:trader_state_updated, new_state)
+    @leader.notify(:trader_state_updated, new_position)
 
-    {:ok, new_state}
+    {:ok, new_position}
   end
 
   defp execute_decision(
          :fetch_buy_order,
-         %State{
+         %Position{
            id: id,
            symbol: symbol,
            buy_order:
@@ -220,9 +246,9 @@ defmodule Naive.Strategy do
                order_id: order_id,
                transact_time: timestamp
              } = buy_order
-         } = state
+         } = position
        ) do
-    @logger.info("Trader's(#{id} #{symbol} buy order got partially filled")
+    @logger.info("Position (#{symbol}/#{id}): The BUY order is now partially filled")
 
     {:ok, %Binance.Order{} = current_buy_order} =
       @binance_client.get_order(symbol, timestamp, order_id)
@@ -230,27 +256,27 @@ defmodule Naive.Strategy do
     :ok = broadcast_order(current_buy_order)
 
     buy_order = %{buy_order | status: current_buy_order.status}
-    new_state = %{state | buy_order: buy_order}
+    new_position = %{position | buy_order: buy_order}
 
-    @leader.notify(:trader_state_updated, new_state)
+    @leader.notify(:trader_state_updated, new_position)
 
-    {:ok, new_state}
+    {:ok, new_position}
   end
 
   defp execute_decision(
          :exit,
-         %State{
+         %Position{
            id: id,
            symbol: symbol
          }
        ) do
-    @logger.info("Trader(#{id}) finished trade cycle for #{symbol}")
+    @logger.info("Position (#{symbol}/#{id}): Trade cycle finished")
     :exit
   end
 
   defp execute_decision(
          :fetch_sell_order,
-         %State{
+         %Position{
            id: id,
            symbol: symbol,
            sell_order:
@@ -258,31 +284,31 @@ defmodule Naive.Strategy do
                order_id: order_id,
                transact_time: timestamp
              } = sell_order
-         } = state
+         } = position
        ) do
-    @logger.info("Trader's(#{id} #{symbol} SELL order got partially filled")
+    @logger.info("Position (#{symbol}/#{id}): the SELL order is now partially filled")
 
     {:ok, %Binance.Order{} = current_sell_order} =
       @binance_client.get_order(symbol, timestamp, order_id)
 
     :ok = broadcast_order(current_sell_order)
 
-    new_state = %{state | sell_order: sell_order}
-    @leader.notify(:trader_state_updated, new_state)
-    {:ok, new_state}
+    new_position = %{position | sell_order: sell_order}
+    @leader.notify(:trader_state_updated, new_position)
+    {:ok, new_position}
   end
 
   defp execute_decision(
          :rebuy,
-         %State{
+         %Position{
            id: id,
            symbol: symbol
-         } = state
+         } = position
        ) do
-    @logger.info("Rebuy triggered for #{symbol} by the trader(#{id})")
-    new_state = %{state | rebuy_notified: true}
-    @leader.notify(:rebuy_triggered, new_state)
-    {:ok, new_state}
+    @logger.info("Position (#{symbol}/#{id}): Rebuy triggered")
+    new_position = %{position | rebuy_notified: true}
+    @leader.notify(:rebuy_triggered, new_position)
+    {:ok, new_position}
   end
 
   defp execute_decision(:skip, state) do

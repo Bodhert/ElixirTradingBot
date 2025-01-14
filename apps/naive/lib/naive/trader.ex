@@ -5,10 +5,11 @@ defmodule Naive.Trader do
 
   use GenServer, restart: :temporary
 
-  alias Core.Struct.TradeEvent
+  # alias Core.Struct.TradeEvent
 
   require Logger
 
+  @registry :naive_traders
   @logger Application.compile_env(:core, :logger)
   @pubsub_client Application.compile_env(:core, :pubsub_client)
   defmodule State do
@@ -42,7 +43,8 @@ defmodule Naive.Trader do
   end
 
   def start_link(%State{} = state) do
-    GenServer.start_link(__MODULE__, state)
+    symbol = String.upcase(state.symbol)
+    GenServer.start_link(__MODULE__, state, name: via_tuple(symbol))
   end
 
   def init(%State{id: id, symbol: symbol} = state) do
@@ -55,10 +57,14 @@ defmodule Naive.Trader do
     {:ok, state}
   end
 
-  def handle_info(%TradeEvent{} = trade_event, %State{} = state) do
-    case Naive.Strategy.execute(trade_event, state) do
-      {:ok, new_state} -> {:noreply, new_state}
-      :exit -> {:stop, :normal, state}
-    end
+  # def handle_info(%TradeEvent{} = trade_event, %State{} = state) do
+  #   case Naive.Strategy.execute(trade_event, state) do
+  #     {:ok, new_state} -> {:noreply, new_state}
+  #     :exit -> {:stop, :normal, state}
+  #   end
+  # end
+
+  defp via_tuple(symbol) do
+    {:via, Registry, {@registry, symbol}}
   end
 end

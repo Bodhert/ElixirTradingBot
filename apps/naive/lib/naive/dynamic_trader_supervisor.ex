@@ -1,4 +1,4 @@
-defmodule Naive.DynamicSymbolSupervisor do
+defmodule Naive.DynamicTraderSupervisor do
   @moduledoc """
   Dynamic symbol supervisor, in charge of supervise runtime created symbols
   """
@@ -6,13 +6,13 @@ defmodule Naive.DynamicSymbolSupervisor do
 
   alias Naive.Repo
   alias Naive.Schema.Settings
-  alias Naive.SymbolSupervisor
+  alias Naive.Trader
 
   import Ecto.Query, only: [from: 2]
 
   require Logger
 
-  @registry :naive_symbol_supervisors
+  @registry :naive_traders
 
   def start_link(_arg) do
     DynamicSupervisor.start_link(__MODULE__, [], name: __MODULE__)
@@ -66,7 +66,7 @@ defmodule Naive.DynamicSymbolSupervisor do
   defp start_child(args) do
     DynamicSupervisor.start_child(
       __MODULE__,
-      {SymbolSupervisor, args}
+      {Trader, args}
     )
   end
 
