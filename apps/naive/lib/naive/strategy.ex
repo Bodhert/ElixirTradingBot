@@ -3,13 +3,14 @@ defmodule Naive.Strategy do
   Module in charge of making and executing descicions
   """
   alias Core.Struct.TradeEvent
+  alias Naive.Schema.Settings
 
   require Logger
 
   @binance_client Application.compile_env(:naive, :binance_client)
-  @leader Application.compile_env(:naive, :leader)
   @logger Application.compile_env(:core, :logger)
   @pubsub_client Application.compile_env(:core, :pubsub_client)
+  @repo Application.compile_env(:naive, :repo)
 
   defmodule Position do
     @enforce_keys [
@@ -38,9 +39,42 @@ defmodule Naive.Strategy do
     ]
   end
 
-  def execute(%TradeEvent{} = trade_event, %Position{} = state) do
-    generate_decision(trade_event, state)
-    |> execute_decision(state)
+  def execute(%TradeEvent{} = trade_event, positions, settings) do
+    generate_decisions(positions, [], trade_event, settings)
+    |> Enum.map(fn {decision, position} ->
+      Task.async(fn -> execute_decision(decision, position, settings) end)
+    end)
+    |> Task.await_many()
+    |> then(&parse_results/1)
+  end
+
+  def generate_decisions([], generated_results, _trade_event, _settings) do
+    generated_results
+  end
+
+  def generate_decisions([position | rest] = positions, generated_results, trade_event, settings) do
+    current_position = positions ++ (generated_results |> Enum.map(&elem(&1, 0)))
+
+    case generate_decision(trade_event, position, current_position, settings) do
+      :exit ->
+        generate_decisions(rest, generated_results, trade_event, settings)
+
+      :rebuy ->
+        generate_decisions(
+          rest,
+          [{:skip, %{position | rebuy_notified: true}}, {:rebuy, position}] ++ generated_results,
+          trade_event,
+          settings
+        )
+
+      decision ->
+        generate_decisions(
+          rest,
+          [{decision, position} | generated_results],
+          trade_event,
+          settings
+        )
+    end
   end
 
   def generate_decision(
@@ -51,7 +85,9 @@ defmodule Naive.Strategy do
           buy_down_interval: buy_down_interval,
           tick_size: tick_size,
           step_size: step_size
-        }
+        },
+        _positions,
+        _settings
       ) do
     price = calculate_buy_price(price, buy_down_interval, tick_size)
     quantity = calculate_quantity(budget, price, step_size)
@@ -67,7 +103,9 @@ defmodule Naive.Strategy do
             status: "FILLED"
           },
           sell_order: %Binance.OrderResponse{}
-        }
+        },
+        _positions,
+        _settings
       )
       when is_number(order_id) do
     :skip
@@ -80,7 +118,9 @@ defmodule Naive.Strategy do
             order_id: order_id
           },
           sell_order: nil
-        }
+        },
+        _positions,
+        _settings
       )
       when is_number(order_id) do
     :fetch_buy_order
@@ -96,7 +136,9 @@ defmodule Naive.Strategy do
           sell_order: nil,
           profit_interval: profit_interval,
           tick_size: tick_size
-        }
+        },
+        _positions,
+        _settings
       ) do
     sell_price = calculate_sell_price(buy_price, profit_interval, tick_size)
 
@@ -107,9 +149,15 @@ defmodule Naive.Strategy do
         %TradeEvent{},
         %Position{
           sell_order: %Binance.OrderResponse{status: "FILLED"}
-        }
+        },
+        _positions,
+        settings
       ) do
-    :exit
+    if settings.status != "shutdown" do
+      :finished
+    else
+      :exit
+    end
   end
 
   def generate_decision(
@@ -120,7 +168,9 @@ defmodule Naive.Strategy do
           sell_order: %Binance.OrderResponse{
             order_id: order_id
           }
-        }
+        },
+        _positions,
+        _settings
       ) do
     :fetch_sell_order
   end
@@ -131,16 +181,19 @@ defmodule Naive.Strategy do
           buy_order: %Binance.OrderResponse{price: buy_price},
           rebuy_interval: rebuy_interval,
           rebuy_notified: false
-        }
+        },
+        positions,
+        settings
       ) do
-    if trigger_rebuy?(buy_price, current_price, rebuy_interval) do
+    if trigger_rebuy?(buy_price, current_price, rebuy_interval) and settings.status != "shutdown" and
+         length(positions) < settings.chunks do
       :rebuy
     else
       :skip
     end
   end
 
-  def generate_decision(%TradeEvent{}, _state) do
+  def generate_decision(%TradeEvent{}, _state, _positions, _settings) do
     :skip
   end
 
@@ -186,12 +239,64 @@ defmodule Naive.Strategy do
     Decimal.lt?(current_price, rebuy_price)
   end
 
+  def fetch_symbol_settings(symbol) do
+    exchange_info =
+      @binance_client.get_exchange_info()
+
+    db_settings = @repo.get_by!(Settings, symbol: symbol)
+
+    merge_filters_into_settings(exchange_info, db_settings, symbol)
+  end
+
+  def merge_filters_into_settings(exchange_info, db_settings, symbol) do
+    symbol_filters =
+      exchange_info
+      |> elem(1)
+      |> Map.get(:symbols)
+      |> Enum.find(&(&1["symbol"] == symbol))
+      |> Map.get("filters")
+
+    tick_size =
+      symbol_filters
+      |> Enum.find(&(&1["filterType"] == "PRICE_FILTER"))
+      |> Map.get("tickSize")
+
+    step_size =
+      symbol_filters
+      |> Enum.find(&(&1["filterType"] == "LOT_SIZE"))
+      |> Map.get("stepSize")
+
+    Map.merge(
+      %{
+        tick_size: tick_size,
+        step_size: step_size
+      },
+      Map.from_struct(db_settings)
+    )
+  end
+
+  def generate_fresh_position(settings, id \\ :os.system_time(:millisecond)) do
+    %{
+      struct(Position, settings)
+      | id: id,
+        budget: Decimal.div(settings.budget, settings.chunks),
+        rebuy_notified: false
+    }
+  end
+
+  def update_status(symbol, status) when is_binary(symbol) and is_binary(status) do
+    @repo.get_by(Settings, symbol: symbol)
+    |> Ecto.Changeset.change(%{status: status})
+    |> @repo.update()
+  end
+
   defp execute_decision(
          {:place_buy_order, price, quantity},
          %Position{
            id: id,
            symbol: symbol
-         } = position
+         } = position,
+         _settings
        ) do
     @logger.info(
       "Position (#{symbol}/#{id}: " <>
@@ -203,10 +308,7 @@ defmodule Naive.Strategy do
 
     :ok = broadcast_order(order)
 
-    new_position = %{position | buy_order: order}
-    @leader.notify(:trader_state_updated, new_position)
-
-    {:ok, new_position}
+    {:ok, %{position | buy_order: order}}
   end
 
   defp execute_decision(
@@ -217,7 +319,8 @@ defmodule Naive.Strategy do
            buy_order: %Binance.OrderResponse{
              orig_qty: quantity
            }
-         } = position
+         } = position,
+         _settings
        ) do
     @logger.info(
       "Position (#{symbol}/#{id}): the BUY order is now filled" <>
@@ -229,11 +332,7 @@ defmodule Naive.Strategy do
 
     :ok = broadcast_order(order)
 
-    new_position = %{position | sell_order: order}
-
-    @leader.notify(:trader_state_updated, new_position)
-
-    {:ok, new_position}
+    {:ok, %{position | buy_order: order}}
   end
 
   defp execute_decision(
@@ -246,7 +345,8 @@ defmodule Naive.Strategy do
                order_id: order_id,
                transact_time: timestamp
              } = buy_order
-         } = position
+         } = position,
+         _settings
        ) do
     @logger.info("Position (#{symbol}/#{id}): The BUY order is now partially filled")
 
@@ -255,23 +355,20 @@ defmodule Naive.Strategy do
 
     :ok = broadcast_order(current_buy_order)
 
-    buy_order = %{buy_order | status: current_buy_order.status}
-    new_position = %{position | buy_order: buy_order}
-
-    @leader.notify(:trader_state_updated, new_position)
-
-    {:ok, new_position}
+    {:ok, %{position | buy_order: %{buy_order | status: current_buy_order.status}}}
   end
 
   defp execute_decision(
-         :exit,
+         :finished,
          %Position{
            id: id,
            symbol: symbol
-         }
+         },
+         settings
        ) do
+    new_position = generate_fresh_position(settings)
     @logger.info("Position (#{symbol}/#{id}): Trade cycle finished")
-    :exit
+    {:ok, new_position}
   end
 
   defp execute_decision(
@@ -284,7 +381,8 @@ defmodule Naive.Strategy do
                order_id: order_id,
                transact_time: timestamp
              } = sell_order
-         } = position
+         } = position,
+         _settings
        ) do
     @logger.info("Position (#{symbol}/#{id}): the SELL order is now partially filled")
 
@@ -293,9 +391,7 @@ defmodule Naive.Strategy do
 
     :ok = broadcast_order(current_sell_order)
 
-    new_position = %{position | sell_order: sell_order}
-    @leader.notify(:trader_state_updated, new_position)
-    {:ok, new_position}
+    {:ok, %{position | sell_order: sell_order}}
   end
 
   defp execute_decision(
@@ -303,16 +399,24 @@ defmodule Naive.Strategy do
          %Position{
            id: id,
            symbol: symbol
-         } = position
+         },
+         settings
        ) do
-    @logger.info("Position (#{symbol}/#{id}): Rebuy triggered")
-    new_position = %{position | rebuy_notified: true}
-    @leader.notify(:rebuy_triggered, new_position)
+    new_position = generate_fresh_position(settings)
+    @logger.info("Position (#{symbol}/#{id}): Rebuy triggered. Starting a new position")
     {:ok, new_position}
   end
 
-  defp execute_decision(:skip, state) do
+  defp execute_decision(:skip, state, _settings) do
     {:ok, state}
+  end
+
+  defp parse_results([]), do: :exit
+
+  defp parse_results([_ | _] = results) do
+    results
+    |> Enum.map(fn {:ok, new_position} -> new_position end)
+    |> then(&{:ok, &1})
   end
 
   defp broadcast_order(%Binance.OrderResponse{} = response) do

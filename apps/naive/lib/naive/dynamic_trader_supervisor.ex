@@ -7,6 +7,7 @@ defmodule Naive.DynamicTraderSupervisor do
   alias Naive.Repo
   alias Naive.Schema.Settings
   alias Naive.Trader
+  alias Naive.Strategy
 
   import Ecto.Query, only: [from: 2]
 
@@ -34,13 +35,13 @@ defmodule Naive.DynamicTraderSupervisor do
 
   def start_worker(symbol) do
     Logger.info("Starting trading on #{symbol}")
-    update_status(symbol, "on")
+    Strategy.update_status(symbol, "on")
     start_child(symbol)
   end
 
   def stop_worker(symbol) do
     Logger.info("Stopping trading on #{symbol}")
-    update_status(symbol, "off")
+    Strategy.update_status(symbol, "off")
     stop_child(symbol)
   end
 
@@ -48,19 +49,14 @@ defmodule Naive.DynamicTraderSupervisor do
     Logger.info("Shutdown of trading on #{symbol} initialized")
 
     {:ok, settings} =
-      update_status(
+      Strategy.update_status(
         symbol,
         "shutdown"
       )
 
-    Naive.Leader.notify(:settings_updated, settings)
-    {:ok, settings}
-  end
+    Trader.notify(:settings_updated, settings)
 
-  defp update_status(symbol, status) when is_binary(symbol) and is_binary(status) do
-    Repo.get_by(Settings, symbol: symbol)
-    |> Ecto.Changeset.change(%{status: status})
-    |> Repo.update()
+    {:ok, settings}
   end
 
   defp start_child(args) do

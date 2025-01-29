@@ -38,7 +38,8 @@ config :naive,
       profit_interval: "-0.0012",
       rebuy_interval: "0.001"
     }
-  }
+  },
+  repo: Naive.Repo
 
 config :naive, Naive.Repo,
   database: "naive",

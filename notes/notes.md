@@ -149,4 +149,7 @@ the main idea is to keep the code simply, and only use process when needed.
 the procces must not be used for code organization.
 
 ## Chapter 20
-20.4.1 Initialization
+a pattern that I see a lot is that first we do the "impure part first , that is basically
+network calls, going to the database, whatever that implies something impure, and once we got all 
+the data we go to do the pure part, so we dont have to mock a lot in testing
+20.5
