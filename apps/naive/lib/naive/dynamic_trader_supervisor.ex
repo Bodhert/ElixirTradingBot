@@ -1,18 +1,19 @@
-defmodule Naive.DynamicSymbolSupervisor do
+defmodule Naive.DynamicTraderSupervisor do
   @moduledoc """
   Dynamic symbol supervisor, in charge of supervise runtime created symbols
   """
   use DynamicSupervisor
 
+  require Logger
+
   alias Naive.Repo
   alias Naive.Schema.Settings
-  alias Naive.SymbolSupervisor
+  alias Naive.Strategy
+  alias Naive.Trader
 
   import Ecto.Query, only: [from: 2]
 
-  require Logger
-
-  @registry :naive_symbol_supervisors
+  @registry :naive_traders
 
   def start_link(_arg) do
     DynamicSupervisor.start_link(__MODULE__, [], name: __MODULE__)
@@ -22,7 +23,7 @@ defmodule Naive.DynamicSymbolSupervisor do
     DynamicSupervisor.init(strategy: :one_for_one)
   end
 
-  def autostart_workers() do
+  def autostart_workers do
     Repo.all(
       from(s in Settings,
         where: s.status == "on",
@@ -34,13 +35,13 @@ defmodule Naive.DynamicSymbolSupervisor do
 
   def start_worker(symbol) do
     Logger.info("Starting trading on #{symbol}")
-    update_status(symbol, "on")
+    Strategy.update_status(symbol, "on")
     start_child(symbol)
   end
 
   def stop_worker(symbol) do
     Logger.info("Stopping trading on #{symbol}")
-    update_status(symbol, "off")
+    Strategy.update_status(symbol, "off")
     stop_child(symbol)
   end
 
@@ -48,25 +49,20 @@ defmodule Naive.DynamicSymbolSupervisor do
     Logger.info("Shutdown of trading on #{symbol} initialized")
 
     {:ok, settings} =
-      update_status(
+      Strategy.update_status(
         symbol,
         "shutdown"
       )
 
-    Naive.Leader.notify(:settings_updated, settings)
-    {:ok, settings}
-  end
+    Trader.notify(:settings_updated, settings)
 
-  defp update_status(symbol, status) when is_binary(symbol) and is_binary(status) do
-    Repo.get_by(Settings, symbol: symbol)
-    |> Ecto.Changeset.change(%{status: status})
-    |> Repo.update()
+    {:ok, settings}
   end
 
   defp start_child(args) do
     DynamicSupervisor.start_child(
       __MODULE__,
-      {SymbolSupervisor, args}
+      {Trader, args}
     )
   end
 
