@@ -4,14 +4,14 @@ defmodule Naive.DynamicTraderSupervisor do
   """
   use DynamicSupervisor
 
+  require Logger
+
   alias Naive.Repo
   alias Naive.Schema.Settings
-  alias Naive.Trader
   alias Naive.Strategy
+  alias Naive.Trader
 
   import Ecto.Query, only: [from: 2]
-
-  require Logger
 
   @registry :naive_traders
 
@@ -23,7 +23,7 @@ defmodule Naive.DynamicTraderSupervisor do
     DynamicSupervisor.init(strategy: :one_for_one)
   end
 
-  def autostart_workers() do
+  def autostart_workers do
     Repo.all(
       from(s in Settings,
         where: s.status == "on",

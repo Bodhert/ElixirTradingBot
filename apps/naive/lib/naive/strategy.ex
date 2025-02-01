@@ -1,6 +1,6 @@
 defmodule Naive.Strategy do
   @moduledoc """
-  Module in charge of making and executing descicions
+  Module in charge of making and executing decisions
   """
   alias Core.Struct.TradeEvent
   alias Naive.Schema.Settings
@@ -48,14 +48,22 @@ defmodule Naive.Strategy do
     |> then(&parse_results/1)
   end
 
+  def parse_results([]), do: :exit
+
+  def parse_results([_ | _] = results) do
+    results
+    |> Enum.map(fn {:ok, new_position} -> new_position end)
+    |> then(&{:ok, &1})
+  end
+
   def generate_decisions([], generated_results, _trade_event, _settings) do
     generated_results
   end
 
   def generate_decisions([position | rest] = positions, generated_results, trade_event, settings) do
-    current_position = positions ++ (generated_results |> Enum.map(&elem(&1, 0)))
+    current_positions = positions ++ (generated_results |> Enum.map(&elem(&1, 0)))
 
-    case generate_decision(trade_event, position, current_position, settings) do
+    case generate_decision(trade_event, position, current_positions, settings) do
       :exit ->
         generate_decisions(rest, generated_results, trade_event, settings)
 
@@ -193,7 +201,7 @@ defmodule Naive.Strategy do
     end
   end
 
-  def generate_decision(%TradeEvent{}, _state, _positions, _settings) do
+  def generate_decision(%TradeEvent{}, %Position{}, _positions, _settings) do
     :skip
   end
 
@@ -237,6 +245,150 @@ defmodule Naive.Strategy do
       Decimal.sub(buy_price, Decimal.mult(buy_price, rebuy_interval))
 
     Decimal.lt?(current_price, rebuy_price)
+  end
+
+  defp execute_decision(
+         {:place_buy_order, price, quantity},
+         %Position{
+           id: id,
+           symbol: symbol
+         } = position,
+         _settings
+       ) do
+    @logger.info(
+      "Position (#{symbol}/#{id}): " <>
+        "Placing a BUY order @ #{price}, quantity: #{quantity}"
+    )
+
+    {:ok, %Binance.OrderResponse{} = order} =
+      @binance_client.order_limit_buy(symbol, quantity, price, "GTC")
+
+    :ok = broadcast_order(order)
+
+    {:ok, %{position | buy_order: order}}
+  end
+
+  defp execute_decision(
+         {:place_sell_order, sell_price},
+         %Position{
+           id: id,
+           symbol: symbol,
+           buy_order: %Binance.OrderResponse{
+             orig_qty: quantity
+           }
+         } = position,
+         _settings
+       ) do
+    @logger.info(
+      "Position (#{symbol}/#{id}): The BUY order is now filled. " <>
+        "Placing a SELL order @ #{sell_price}, quantity: #{quantity}"
+    )
+
+    {:ok, %Binance.OrderResponse{} = order} =
+      @binance_client.order_limit_sell(symbol, quantity, sell_price, "GTC")
+
+    :ok = broadcast_order(order)
+
+    {:ok, %{position | sell_order: order}}
+  end
+
+  defp execute_decision(
+         :fetch_buy_order,
+         %Position{
+           id: id,
+           symbol: symbol,
+           buy_order:
+             %Binance.OrderResponse{
+               order_id: order_id,
+               transact_time: timestamp
+             } = buy_order
+         } = position,
+         _settings
+       ) do
+    @logger.info("Position (#{symbol}/#{id}): The BUY order is now partially filled")
+
+    {:ok, %Binance.Order{} = current_buy_order} =
+      @binance_client.get_order(symbol, timestamp, order_id)
+
+    :ok = broadcast_order(current_buy_order)
+    buy_order = %{buy_order | status: current_buy_order.status}
+    {:ok, %{position | buy_order: buy_order}}
+  end
+
+  defp execute_decision(
+         :finished,
+         %Position{
+           id: id,
+           symbol: symbol
+         },
+         settings
+       ) do
+    new_position = generate_fresh_position(settings)
+    @logger.info("Position (#{symbol}/#{id}): Trade cycle finished")
+    {:ok, new_position}
+  end
+
+  defp execute_decision(
+         :fetch_sell_order,
+         %Position{
+           id: id,
+           symbol: symbol,
+           sell_order:
+             %Binance.OrderResponse{
+               order_id: order_id,
+               transact_time: timestamp
+             } = sell_order
+         } = position,
+         _settings
+       ) do
+    @logger.info("Position (#{symbol}/#{id}): The SELL order is now partially filled")
+
+    {:ok, %Binance.Order{} = current_sell_order} =
+      @binance_client.get_order(symbol, timestamp, order_id)
+
+    :ok = broadcast_order(current_sell_order)
+    sell_order = %{sell_order | status: current_sell_order.status}
+    {:ok, %{position | sell_order: sell_order}}
+  end
+
+  defp execute_decision(
+         :rebuy,
+         %Position{
+           id: id,
+           symbol: symbol
+         },
+         settings
+       ) do
+    new_position = generate_fresh_position(settings)
+    @logger.info("Position (#{symbol}/#{id}): Rebuy triggered. Starting a new position")
+    {:ok, new_position}
+  end
+
+  defp execute_decision(:skip, state, _settings) do
+    {:ok, state}
+  end
+
+  defp broadcast_order(%Binance.OrderResponse{} = response) do
+    response
+    |> convert_to_order
+    |> broadcast_order
+  end
+
+  defp broadcast_order(%Binance.Order{} = order) do
+    @pubsub_client.broadcast(Core.PubSub, "ORDERS:#{order.symbol}", order)
+  end
+
+  defp convert_to_order(%Binance.OrderResponse{} = response) do
+    data = response |> Map.from_struct()
+
+    Binance.Order
+    |> struct(data)
+    |> Map.merge(%{
+      cummulative_quote_qty: "0.00000000",
+      stop_price: "0.00000000",
+      iceberg_qty: "0.00000000",
+      is_working: true
+    })
   end
 
   def fetch_symbol_settings(symbol) do
@@ -288,157 +440,5 @@ defmodule Naive.Strategy do
     @repo.get_by(Settings, symbol: symbol)
     |> Ecto.Changeset.change(%{status: status})
     |> @repo.update()
-  end
-
-  defp execute_decision(
-         {:place_buy_order, price, quantity},
-         %Position{
-           id: id,
-           symbol: symbol
-         } = position,
-         _settings
-       ) do
-    @logger.info(
-      "Position (#{symbol}/#{id}: " <>
-        "Placing BUY order @ #{price}, quantity: #{quantity}"
-    )
-
-    {:ok, %Binance.OrderResponse{} = order} =
-      @binance_client.order_limit_buy(symbol, quantity, price, "GTC")
-
-    :ok = broadcast_order(order)
-
-    {:ok, %{position | buy_order: order}}
-  end
-
-  defp execute_decision(
-         {:place_sell_order, sell_price},
-         %Position{
-           id: id,
-           symbol: symbol,
-           buy_order: %Binance.OrderResponse{
-             orig_qty: quantity
-           }
-         } = position,
-         _settings
-       ) do
-    @logger.info(
-      "Position (#{symbol}/#{id}): the BUY order is now filled" <>
-        "Placing a Sell order @ #{sell_price}, quantity: #{quantity}"
-    )
-
-    {:ok, %Binance.OrderResponse{} = order} =
-      @binance_client.order_limit_sell(symbol, quantity, sell_price, "GTC")
-
-    :ok = broadcast_order(order)
-
-    {:ok, %{position | buy_order: order}}
-  end
-
-  defp execute_decision(
-         :fetch_buy_order,
-         %Position{
-           id: id,
-           symbol: symbol,
-           buy_order:
-             %Binance.OrderResponse{
-               order_id: order_id,
-               transact_time: timestamp
-             } = buy_order
-         } = position,
-         _settings
-       ) do
-    @logger.info("Position (#{symbol}/#{id}): The BUY order is now partially filled")
-
-    {:ok, %Binance.Order{} = current_buy_order} =
-      @binance_client.get_order(symbol, timestamp, order_id)
-
-    :ok = broadcast_order(current_buy_order)
-
-    {:ok, %{position | buy_order: %{buy_order | status: current_buy_order.status}}}
-  end
-
-  defp execute_decision(
-         :finished,
-         %Position{
-           id: id,
-           symbol: symbol
-         },
-         settings
-       ) do
-    new_position = generate_fresh_position(settings)
-    @logger.info("Position (#{symbol}/#{id}): Trade cycle finished")
-    {:ok, new_position}
-  end
-
-  defp execute_decision(
-         :fetch_sell_order,
-         %Position{
-           id: id,
-           symbol: symbol,
-           sell_order:
-             %Binance.OrderResponse{
-               order_id: order_id,
-               transact_time: timestamp
-             } = sell_order
-         } = position,
-         _settings
-       ) do
-    @logger.info("Position (#{symbol}/#{id}): the SELL order is now partially filled")
-
-    {:ok, %Binance.Order{} = current_sell_order} =
-      @binance_client.get_order(symbol, timestamp, order_id)
-
-    :ok = broadcast_order(current_sell_order)
-
-    {:ok, %{position | sell_order: sell_order}}
-  end
-
-  defp execute_decision(
-         :rebuy,
-         %Position{
-           id: id,
-           symbol: symbol
-         },
-         settings
-       ) do
-    new_position = generate_fresh_position(settings)
-    @logger.info("Position (#{symbol}/#{id}): Rebuy triggered. Starting a new position")
-    {:ok, new_position}
-  end
-
-  defp execute_decision(:skip, state, _settings) do
-    {:ok, state}
-  end
-
-  defp parse_results([]), do: :exit
-
-  defp parse_results([_ | _] = results) do
-    results
-    |> Enum.map(fn {:ok, new_position} -> new_position end)
-    |> then(&{:ok, &1})
-  end
-
-  defp broadcast_order(%Binance.OrderResponse{} = response) do
-    response
-    |> convert_to_order
-    |> broadcast_order
-  end
-
-  defp broadcast_order(%Binance.Order{} = order) do
-    @pubsub_client.broadcast(Core.PubSub, "ORDERS:#{order.symbol}", order)
-  end
-
-  defp convert_to_order(%Binance.OrderResponse{} = response) do
-    data = response |> Map.from_struct()
-
-    Binance.Order
-    |> struct(data)
-    |> Map.merge(%{
-      cummulative_quote_qty: "0.00000000",
-      stop_price: "0.00000000",
-      iceberg_qty: "0.00000000",
-      is_working: true
-    })
   end
 end

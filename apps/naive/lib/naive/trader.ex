@@ -10,9 +10,9 @@ defmodule Naive.Trader do
 
   require Logger
 
-  @registry :naive_traders
   @logger Application.compile_env(:core, :logger)
   @pubsub_client Application.compile_env(:core, :pubsub_client)
+  @registry :naive_traders
   defmodule State do
     @moduledoc """
     Trader State
@@ -27,7 +27,7 @@ defmodule Naive.Trader do
   end
 
   def init(symbol) do
-    @logger.info("Initializing a new trader for #{symbol}")
+    @logger.info("Initializing new trader for #{symbol}")
 
     @pubsub_client.subscribe(Core.PubSub, "TRADE_EVENTS:#{symbol}")
 
@@ -40,16 +40,12 @@ defmodule Naive.Trader do
     {:noreply, %State{settings: settings, positions: positions}}
   end
 
-  def handle_info(%TradeEvent{} = trade_event, %State{} = state) do
-    case Naive.Strategy.execute(trade_event, state.positions, state.settings) do
-      {:ok, updated_positions} ->
-        {:noreply, %{state | positions: updated_positions}}
+  def notify(:settings_updated, settings) do
+    call_trader(settings.symbol, {:update_settings, settings})
+  end
 
-      :exit ->
-        {:ok, _settings} = Strategy.update_status(trade_event.symbol, "off")
-        Logger.info("Trading for #{trade_event.symbol} stopped")
-        {:stop, :normal, state}
-    end
+  def get_positions(symbol) do
+    call_trader(symbol, {:get_positions, symbol})
   end
 
   def handle_call({:update_settings, new_settings}, _, state) do
@@ -60,12 +56,16 @@ defmodule Naive.Trader do
     {:reply, state.positions, state}
   end
 
-  def notify(:settings_updated, settings) do
-    call_trader(settings.symbol, {:update_settings, settings})
-  end
+  def handle_info(%TradeEvent{} = trade_event, %State{} = state) do
+    case Naive.Strategy.execute(trade_event, state.positions, state.settings) do
+      {:ok, updated_positions} ->
+        {:noreply, %{state | positions: updated_positions}}
 
-  def get_positions(symbol) do
-    call_trader(symbol, {:get_positions, symbol})
+      :exit ->
+        {:ok, _settings} = Strategy.update_status(trade_event.symbol, "off")
+        Logger.info("Trading for #{trade_event.symbol} stopped")
+        {:stop, :normal, state}
+    end
   end
 
   defp call_trader(symbol, data) do
