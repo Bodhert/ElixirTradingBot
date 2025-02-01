@@ -152,4 +152,11 @@ the procces must not be used for code organization.
 a pattern that I see a lot is that first we do the "impure part first , that is basically
 network calls, going to the database, whatever that implies something impure, and once we got all 
 the data we go to do the pure part, so we dont have to mock a lot in testing
-20.5
+
+it comes to my mind that recursion, and mappign and reducing is a building block for
+programming in fp, also this about what the guy for Grox Io saids. map reduce convert
+
+build, convert or transforms, CRC -> construct reduce convert
+
+is better to not overoptimize, sometime a simple proccess with a tasks can handle the load, do
+not optimize ahead of time
