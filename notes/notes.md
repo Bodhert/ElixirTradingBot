@@ -162,5 +162,5 @@ is better to not overoptimize, sometime a simple proccess with a tasks can handl
 not optimize ahead of time
 
 ## Chapter 21
-when integrating with third party libraries using an "e-z replasable" module is desired, something like
+when integrating with third party libraries using an "e-z replaceable" module is desired, something like
 creating an api inside the code
