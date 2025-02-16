@@ -71,20 +71,6 @@ defmodule BinanceMock do
     end
   end
 
-  defp get_cached_exchange_info() do
-    File.cwd!()
-    |> Path.split()
-    |> Enum.drop(-1)
-    |> Kernel.++([
-      "binance_mock",
-      "test",
-      "assets",
-      "exchange_info.json"
-    ])
-    |> Path.join()
-    |> File.read()
-  end
-
   defp fetch_symbol_filters(symbol, exchange_info) do
     symbol_filters =
       exchange_info
@@ -125,10 +111,9 @@ defmodule BinanceMock do
       when is_binary(symbol) and is_binary(quantity) and is_binary(price) and
              (side == "BUY" or side == "SELL") do
     current_timestamp = :os.system_time(:millisecond)
-    client_order_id = :crypto.hash(:md5, "#{order_id}") |> Base.encode16()
 
     %Exchange.Order{
-      order_id: order_id,
+      id: order_id,
       symbol: symbol,
       price: price,
       quantity: quantity,
@@ -273,20 +258,17 @@ defmodule BinanceMock do
     Phoenix.PubSub.broadcast(Core.PubSub, "TRADE_EVENTS:#{trade_event.symbol}", trade_event)
   end
 
-  defp get_cached_exchange_info do
-    {:ok, data} =
-      File.cwd!()
-      |> Path.split()
-      |> Enum.drop(-1)
-      |> Kernel.++([
-        "binance_mock",
-        "test",
-        "assets",
-        "exchange_info.json"
-      ])
-      |> Path.join()
-      |> File.read()
-
-    {:ok, Jason.decode!(data) |> Binance.ExchangeInfo.new()}
+  defp get_cached_exchange_info() do
+    File.cwd!()
+    |> Path.split()
+    |> Enum.drop(-1)
+    |> Kernel.++([
+      "binance_mock",
+      "test",
+      "assets",
+      "exchange_info.json"
+    ])
+    |> Path.join()
+    |> File.read()
   end
 end

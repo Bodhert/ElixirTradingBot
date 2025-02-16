@@ -17,7 +17,7 @@ config :data_warehouse, DataWarehouse.Repo,
   hostname: "localhost"
 
 config :streamer,
-  binance_client: BinanceMock,
+  exchange_client: BinanceMock,
   ecto_repos: [Streamer.Repo]
 
 config :streamer, Streamer.Repo,
@@ -27,7 +27,7 @@ config :streamer, Streamer.Repo,
   hostname: "localhost"
 
 config :naive,
-  binance_client: BinanceMock,
+  exchange_client: BinanceMock,
   ecto_repos: [Naive.Repo],
   leader: Naive.Leader,
   repo: Naive.Repo,

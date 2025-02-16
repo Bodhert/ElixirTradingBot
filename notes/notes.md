@@ -164,3 +164,6 @@ not optimize ahead of time
 ## Chapter 21
 when integrating with third party libraries using an "e-z replaceable" module is desired, something like
 creating an api inside the code
+I really believe this chapter could introduce a "real" migration instead of replacing old fields.
+
+I like the idea to base yourself in already existing implementations instead of over-engineer and try to come up with everything from scratch

@@ -1,5 +1,6 @@
 defmodule Core.Exchange.Binance do
   @behaviour Core.Exchange
+  alias Core.Exchange
 
   @impl Core.Exchange
   def fetch_symbols() do
@@ -69,12 +70,12 @@ defmodule Core.Exchange.Binance do
     end
   end
 
-  @impl core.exchange
+  @impl Core.Exchange
   def order_limit_buy(symbol, quantity, price) do
-    case binance.get_order(symbol, quantity, price, "GTC") do
+    case Binance.get_order(symbol, quantity, price, "GTC") do
       {:ok, %Binance.OrderResponse{} = order} ->
         {:ok,
-         %Exchange.order(){
+         %Exchange.Order{
            id: order.order_id,
            symbol: order.symbol,
            price: order.price,
@@ -89,12 +90,12 @@ defmodule Core.Exchange.Binance do
     end
   end
 
-  @impl core.exchange
+  @impl Core.Exchange
   def order_limit_sell(symbol, quantity, price) do
-    case binance.get_order(symbol, quantity, price, "GTC") do
+    case Binance.get_order(symbol, quantity, price, "GTC") do
       {:ok, %Binance.OrderResponse{} = order} ->
         {:ok,
-         %Exchange.order(){
+         %Exchange.Order{
            id: order.order_id,
            symbol: order.symbol,
            price: order.price,
