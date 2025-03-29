@@ -3,10 +3,6 @@ import Config
 config :binance_mock,
   use_cached_exchange_info: false
 
-config :core,
-  logger: Logger,
-  pubsub_client: Phoenix.PubSub
-
 config :data_warehouse,
   ecto_repos: [DataWarehouse.Repo]
 
@@ -17,7 +13,7 @@ config :data_warehouse, DataWarehouse.Repo,
   hostname: "localhost"
 
 config :streamer,
-  exchange_client: BinanceMock,
+  binance_client: BinanceMock,
   ecto_repos: [Streamer.Repo]
 
 config :streamer, Streamer.Repo,
@@ -27,10 +23,9 @@ config :streamer, Streamer.Repo,
   hostname: "localhost"
 
 config :naive,
-  exchange_client: BinanceMock,
+  binance_client: BinanceMock,
+  # exchange_client: BinanceMock,
   ecto_repos: [Naive.Repo],
-  leader: Naive.Leader,
-  repo: Naive.Repo,
   trading: %{
     defaults: %{
       chunks: 5,

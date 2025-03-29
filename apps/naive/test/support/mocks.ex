@@ -3,7 +3,7 @@ defmodule Naive.Support.Mocks do
   Compile time mocks for avoiding warnings
   """
 
-  Mox.defmock(Test.BinanceMock, for: BinanceMock)
-  Mox.defmock(Test.LoggerMock, for: Core.Test.Logger)
-  Mox.defmock(Test.PubSubMock, for: Core.Test.PubSub)
+  # Mox.defmock(Test.BinanceMock, for: BinanceMock)
+  # Mox.defmock(Test.LoggerMock, for: Core.Test.Logger)
+  # Mox.defmock(Test.PubSubMock, for: Core.Test.PubSub)
 end

@@ -5,14 +5,13 @@ defmodule Naive.Strategy do
   alias Core.Exchange
 
   alias Core.Struct.TradeEvent
+
   alias Naive.Schema.Settings
+  alias Naive.Repo
 
   require Logger
 
-  @exchange_client Application.compile_env(:naive, :exchange_client)
-  @logger Application.compile_env(:core, :logger)
-  @pubsub_client Application.compile_env(:core, :pubsub_client)
-  @repo Application.compile_env(:naive, :repo)
+  @binance_client Application.compile_env(:naive, :binance_client)
 
   defmodule Position do
     @enforce_keys [
@@ -257,13 +256,13 @@ defmodule Naive.Strategy do
          } = position,
          _settings
        ) do
-    @logger.info(
+    Logger.info(
       "Position (#{symbol}/#{id}): " <>
         "Placing a BUY order @ #{price}, quantity: #{quantity}"
     )
 
     {:ok, %Exchange.Order{} = order} =
-      @exchange_client.order_limit_buy(symbol, quantity, price)
+      @binance_client.order_limit_buy(symbol, quantity, price)
 
     :ok = broadcast_order(order)
 
@@ -281,13 +280,13 @@ defmodule Naive.Strategy do
          } = position,
          _settings
        ) do
-    @logger.info(
+    Logger.info(
       "Position (#{symbol}/#{id}): The BUY order is now filled. " <>
         "Placing a SELL order @ #{sell_price}, quantity: #{quantity}"
     )
 
     {:ok, %Exchange.Order{} = order} =
-      @exchange_client.order_limit_sell(symbol, quantity, sell_price)
+      @binance_client.order_limit_sell(symbol, quantity, sell_price)
 
     :ok = broadcast_order(order)
 
@@ -307,10 +306,10 @@ defmodule Naive.Strategy do
          } = position,
          _settings
        ) do
-    @logger.info("Position (#{symbol}/#{id}): The BUY order is now partially filled")
+    Logger.info("Position (#{symbol}/#{id}): The BUY order is now partially filled")
 
     {:ok, %Exchange.Order{} = current_buy_order} =
-      @exchange_client.get_order(symbol, timestamp, order_id)
+      @binance_client.get_order(symbol, timestamp, order_id)
 
     :ok = broadcast_order(current_buy_order)
     buy_order = %{buy_order | status: current_buy_order.status}
@@ -326,7 +325,7 @@ defmodule Naive.Strategy do
          settings
        ) do
     new_position = generate_fresh_position(settings)
-    @logger.info("Position (#{symbol}/#{id}): Trade cycle finished")
+    Logger.info("Position (#{symbol}/#{id}): Trade cycle finished")
     {:ok, new_position}
   end
 
@@ -343,10 +342,10 @@ defmodule Naive.Strategy do
          } = position,
          _settings
        ) do
-    @logger.info("Position (#{symbol}/#{id}): The SELL order is now partially filled")
+    Logger.info("Position (#{symbol}/#{id}): The SELL order is now partially filled")
 
     {:ok, %Exchange.Order{} = current_sell_order} =
-      @exchange_client.get_order(symbol, timestamp, order_id)
+      @binance_client.get_order(symbol, timestamp, order_id)
 
     :ok = broadcast_order(current_sell_order)
     sell_order = %{sell_order | status: current_sell_order.status}
@@ -362,7 +361,7 @@ defmodule Naive.Strategy do
          settings
        ) do
     new_position = generate_fresh_position(settings)
-    @logger.info("Position (#{symbol}/#{id}): Rebuy triggered. Starting new position")
+    Logger.info("Position (#{symbol}/#{id}): Rebuy triggered. Starting new position")
     {:ok, new_position}
   end
 
@@ -371,14 +370,14 @@ defmodule Naive.Strategy do
   end
 
   defp broadcast_order(%Exchange.Order{} = order) do
-    @pubsub_client.broadcast(Core.PubSub, "ORDERS:#{order.symbol}", order)
+    Phoenix.PubSub.broadcast(Core.PubSub, "ORDERS:#{order.symbol}", order)
   end
 
   def fetch_symbol_settings(symbol) do
     {:ok, filters} =
-      @exchange_client.fetch_symbol_filters(symbol)
+      @binance_client.fetch_symbol_filters(symbol)
 
-    db_settings = @repo.get_by!(Settings, symbol: symbol)
+    db_settings = Repo.get_by!(Settings, symbol: symbol)
 
     Map.merge(
       filters |> Map.from_struct(),
@@ -396,8 +395,8 @@ defmodule Naive.Strategy do
   end
 
   def update_status(symbol, status) when is_binary(symbol) and is_binary(status) do
-    @repo.get_by(Settings, symbol: symbol)
+    Repo.get_by(Settings, symbol: symbol)
     |> Ecto.Changeset.change(%{status: status})
-    |> @repo.update()
+    |> Repo.update()
   end
 end

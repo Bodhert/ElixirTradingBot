@@ -72,12 +72,11 @@ defmodule Core.Exchange.Binance do
 
   @impl Core.Exchange
   def order_limit_buy(symbol, quantity, price) do
-    case Binance.get_order(symbol, quantity, price, "GTC") do
+    case Binance.order_limit_buy(symbol, quantity, price, "GTC") do
       {:ok, %Binance.OrderResponse{} = order} ->
         {:ok,
          %Exchange.Order{
            id: order.order_id,
-           symbol: order.symbol,
            price: order.price,
            quantity: order.orig_qty,
            side: :buy,
@@ -92,12 +91,11 @@ defmodule Core.Exchange.Binance do
 
   @impl Core.Exchange
   def order_limit_sell(symbol, quantity, price) do
-    case Binance.get_order(symbol, quantity, price, "GTC") do
+    case Binance.order_limit_sell(symbol, quantity, price, "GTC") do
       {:ok, %Binance.OrderResponse{} = order} ->
         {:ok,
          %Exchange.Order{
            id: order.order_id,
-           symbol: order.symbol,
            price: order.price,
            quantity: order.orig_qty,
            side: :sell,

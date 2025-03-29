@@ -6,10 +6,9 @@ defmodule BinanceMock do
 
   use GenServer
 
-  alias Decimal
-  alias Core.Struct.TradeEvent
-  alias Core.Struct.TradeEvent
   alias Core.Exchange
+  alias Core.Struct.TradeEvent
+  alias Decimal
 
   require Logger
 
@@ -35,13 +34,6 @@ defmodule BinanceMock do
     {:ok, %State{}}
   end
 
-  def get_exchange_info() do
-    case Application.get_env(:binance_mock, :use_cached_exchange_info) do
-      true -> get_cached_exchange_info()
-      _ -> Binance.get_exchange_info()
-    end
-  end
-
   def fetch_symbols() do
     case fetch_exchange_info() do
       {:ok, %{symbols: symbols}} ->
@@ -62,37 +54,6 @@ defmodule BinanceMock do
       error ->
         error
     end
-  end
-
-  defp fetch_exchange_info() do
-    case Application.get_env(:binance_mock, :use_cached_example_info) do
-      true -> get_cached_exchange_info()
-      _ -> Binance.get_exchange_info()
-    end
-  end
-
-  defp fetch_symbol_filters(symbol, exchange_info) do
-    symbol_filters =
-      exchange_info
-      |> Map.get(:symbols)
-      |> Enum.find(&(&1["symbol"] == symbol))
-      |> Map.get("filters")
-
-    tick_size =
-      symbol_filters
-      |> Enum.find(&(&1["filterType"] == "PRICE_FILTER"))
-      |> Map.get("tickSize")
-
-    step_size =
-      symbol_filters
-      |> Enum.find(&(&1["filterType"] == "LOT_SIZE"))
-      |> Map.get("stepSize")
-
-    %Exchange.SymbolInfo{
-      symbol: symbol,
-      tick_size: tick_size,
-      step_size: step_size
-    }
   end
 
   def order_limit_buy(symbol, quantity, price) do
@@ -258,7 +219,14 @@ defmodule BinanceMock do
     Phoenix.PubSub.broadcast(Core.PubSub, "TRADE_EVENTS:#{trade_event.symbol}", trade_event)
   end
 
-  defp get_cached_exchange_info() do
+  defp fetch_exchange_info() do
+    case Application.get_env(:binance_mock, :use_cached_exchange_info) do
+      true -> get_cached_exchange_info()
+      _ -> Binance.get_exchange_info()
+    end
+  end
+
+  defp get_cached_exchange_info do
     File.cwd!()
     |> Path.split()
     |> Enum.drop(-1)
@@ -270,5 +238,29 @@ defmodule BinanceMock do
     ])
     |> Path.join()
     |> File.read()
+  end
+
+  defp fetch_symbol_filters(symbol, exchange_info) do
+    symbol_filters =
+      exchange_info
+      |> Map.get(:symbols)
+      |> Enum.find(&(&1["symbol"] == symbol))
+      |> Map.get("filters")
+
+    tick_size =
+      symbol_filters
+      |> Enum.find(&(&1["filterType"] == "PRICE_FILTER"))
+      |> Map.get("tickSize")
+
+    step_size =
+      symbol_filters
+      |> Enum.find(&(&1["filterType"] == "LOT_SIZE"))
+      |> Map.get("stepSize")
+
+    %Exchange.SymbolInfo{
+      symbol: symbol,
+      tick_size: tick_size,
+      step_size: step_size
+    }
   end
 end

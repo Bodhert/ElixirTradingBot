@@ -47,7 +47,7 @@ defmodule Naive.MixProject do
       {:phoenix_pubsub, "~> 2.0"},
       {:postgrex, ">= 0.0.0"},
       {:sobelow, "~> 0.13", only: [:dev, :test], runtime: false},
-      {:mox, "~> 1.0", only: [:test, :integration]}
+      {:mimic, "~> 1.7", only: [:test, :integration]}
     ]
   end
 
