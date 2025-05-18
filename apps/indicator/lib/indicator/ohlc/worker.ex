@@ -9,7 +9,7 @@ defmodule Indicator.Ohlc.Worker do
 
   def init(symbol) do
     symbol = String.upcase(symbol)
-    Logger.debug("Initializing a new OHLC worker for #{symbol}")
+    Logger.info("Initializing a new OHLC worker for #{symbol}")
 
     Phoenix.PubSub.subscribe(
       Core.PubSub,
