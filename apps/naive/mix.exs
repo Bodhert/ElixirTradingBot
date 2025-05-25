@@ -15,8 +15,7 @@ defmodule Naive.MixProject do
       elixirc_options: [
         warnings_as_errors: true
       ],
-      aliases: aliases(),
-      elixirc_paths: elixirc_paths(Mix.env())
+      aliases: aliases()
     ]
   end
 
@@ -44,13 +43,10 @@ defmodule Naive.MixProject do
       {:decimal, "~> 2.0"},
       {:ecto_sql, "~> 3.0"},
       {:ecto_enum, "~> 1.4"},
+      {:mimic, "~> 1.7", only: [:test, :integration]},
       {:phoenix_pubsub, "~> 2.0"},
       {:postgrex, ">= 0.0.0"},
-      {:sobelow, "~> 0.13", only: [:dev, :test], runtime: false},
-      {:mox, "~> 1.0", only: [:test, :integration]}
+      {:sobelow, "~> 0.13", only: [:dev, :test], runtime: false}
     ]
   end
-
-  defp elixirc_paths(:test), do: ["test/support", "lib"]
-  defp elixirc_paths(_), do: ["lib"]
 end

@@ -160,3 +160,19 @@ build, convert or transforms, CRC -> construct reduce convert
 
 is better to not overoptimize, sometime a simple proccess with a tasks can handle the load, do
 not optimize ahead of time
+
+## Chapter 21
+when integrating with third party libraries using an "e-z replaceable" module is desired, something like
+creating an api inside the code
+I really believe this chapter could introduce a "real" migration instead of replacing old fields.
+
+I like the idea to base yourself in already existing implementations instead of over-engineer and try to come up with everything from scratch
+
+
+this chapter is was really hard to follow along cause what was in the book
+was not the same that was the same that is reflected in the branches, first example `apps/data_warehouse/lib/data_warehouse/schema/order.ex`
+
+it results that i need to revert to chapter 20 an remove all the mox shenanigans
+cause it was really slow me down for a while, but it really taugh me that abandon things and revisiting them later with a fresh head could bring beneficts
+
+
