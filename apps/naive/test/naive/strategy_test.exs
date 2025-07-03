@@ -77,7 +77,7 @@ defmodule Naive.StrategyTest do
   end
 
   @tag :unit
-  test "Generating skip decision as buy and sell already placed(race condition ocurred)" do
+  test "Generating skip decision as buy and sell already placed(race condition occurred)" do
     assert Strategy.generate_decision(
              %TradeEvent{
                buyer_order_id: 123
@@ -196,7 +196,7 @@ defmodule Naive.StrategyTest do
   end
 
   @tag :unit
-  test "Generating skip (rebuy) decision because rebuy is already notified" do
+  test "Generating skip(rebuy) decision because rebuy is already notified" do
     assert Strategy.generate_decision(
              %TradeEvent{
                price: "0.89"
