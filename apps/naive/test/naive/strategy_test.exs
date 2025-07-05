@@ -63,4 +63,189 @@ defmodule Naive.StrategyTest do
     %{buy_order: buy_order} = List.first(new_positions)
     assert buy_order == expected_order
   end
+
+  @tag :unit
+  test "Generating place buy order decision" do
+    assert Strategy.generate_decision(
+             %TradeEvent{
+               price: "1.0"
+             },
+             generate_position(%{budget: "10.0", buy_down_interval: "0.01"}),
+             :ignored,
+             :ignored
+           ) == {:place_buy_order, "0.99000000", "10.00000000"}
+  end
+
+  @tag :unit
+  test "Generating skip decision as buy and sell already placed(race condition occurred)" do
+    assert Strategy.generate_decision(
+             %TradeEvent{
+               buyer_order_id: 123
+             },
+             generate_position(%{
+               buy_order: %Binance.OrderResponse{
+                 order_id: 123,
+                 status: "FILLED"
+               },
+               sell_order: %Binance.OrderResponse{}
+             }),
+             :ignored,
+             :ignored
+           ) == :skip
+  end
+
+  @tag :unit
+  test "Generate place sell order decision" do
+    assert Strategy.generate_decision(
+             %TradeEvent{},
+             generate_position(%{
+               buy_order: %Binance.OrderResponse{
+                 status: "FILLED",
+                 price: "1.00"
+               },
+               sell_order: nil,
+               profit_interval: "0.01",
+               tick_size: "0.0001"
+             }),
+             :ignored,
+             :ignored
+           ) == {:place_sell_order, "1.0120"}
+  end
+
+  @tag :unit
+  test "Generating fetch buy order decision" do
+    assert Strategy.generate_decision(
+             %TradeEvent{buyer_order_id: 1234},
+             generate_position(%{
+               buy_order: %Binance.OrderResponse{
+                 order_id: 1234
+               }
+             }),
+             :ignored,
+             :ignored
+           ) == :fetch_buy_order
+  end
+
+  @tag :unit
+  test "Generating finish position decision" do
+    assert Strategy.generate_decision(
+             %TradeEvent{},
+             generate_position(%{
+               buy_order: %Binance.OrderResponse{
+                 status: "FILLED"
+               },
+               sell_order: %Binance.OrderResponse{
+                 status: "FILLED"
+               }
+             }),
+             :ignored,
+             %{status: "on"}
+           ) == :finished
+  end
+
+  @tag :unit
+  test "Generating exit position decision" do
+    assert Strategy.generate_decision(
+             %TradeEvent{},
+             generate_position(%{
+               buy_order: %Binance.OrderResponse{
+                 status: "FILLED"
+               },
+               sell_order: %Binance.OrderResponse{
+                 status: "FILLED"
+               }
+             }),
+             :ignored,
+             %{status: "shutdown"}
+           ) == :exit
+  end
+
+  @tag :unit
+  test "Generating fetch sell order decision" do
+    assert Strategy.generate_decision(
+             %TradeEvent{
+               seller_order_id: 1234
+             },
+             generate_position(%{
+               buy_order: %Binance.OrderResponse{},
+               sell_order: %Binance.OrderResponse{
+                 order_id: 1234
+               }
+             }),
+             :ignored,
+             :ignored
+           ) == :fetch_sell_order
+  end
+
+  @tag :unit
+  test "Generating rebuy decision" do
+    assert Strategy.generate_decision(
+             %TradeEvent{
+               price: "0.89"
+             },
+             generate_position(%{
+               buy_order: %Binance.OrderResponse{
+                 price: "1.00"
+               },
+               rebuy_interval: "0.1",
+               rebuy_notified: false
+             }),
+             [:position],
+             %{status: "on", chunks: 2}
+           ) == :rebuy
+  end
+
+  @tag :unit
+  test "Generating skip(rebuy) decision because rebuy is already notified" do
+    assert Strategy.generate_decision(
+             %TradeEvent{
+               price: "0.89"
+             },
+             generate_position(%{
+               buy_order: %Binance.OrderResponse{
+                 price: "1.00"
+               },
+               rebuy_interval: "0.1",
+               rebuy_notified: true
+             }),
+             [:position],
+             %{status: "on", chunks: 2}
+           ) == :skip
+  end
+
+  @tag :unit
+  test "Generating skip rebuy decision" do
+    assert Strategy.generate_decision(
+             %TradeEvent{
+               price: "0.9"
+             },
+             generate_position(%{
+               buy_order: %Binance.OrderResponse{
+                 price: "1.00"
+               },
+               rebuy_interval: "0.1",
+               rebuy_notified: false
+             }),
+             [:position],
+             %{status: "on", chunks: 1}
+           ) == :skip
+  end
+
+  defp generate_position(data) do
+    %{
+      id: 1_234_456_789_101,
+      symbol: "XRPUSDT",
+      profit_interval: "0.005",
+      rebuy_interval: "0.01",
+      rebuy_notified: false,
+      budget: "10.0",
+      buy_order: nil,
+      sell_order: nil,
+      buy_down_interval: "0.01",
+      tick_size: "0.00010000",
+      step_size: "1.00000000"
+    }
+    |> Map.merge(data)
+    |> then(&struct(Strategy.Position, &1))
+  end
 end
