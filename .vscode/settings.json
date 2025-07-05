@@ -1,0 +1,7 @@
+{
+        "github.copilot.enable": false,
+        // avoid the editor to suggest me what to do next, this for learning purposes
+        // deactive when real work is needed
+        "editor.inlineSuggest.enabled": false,
+        "editor.quickSuggestionsDelay": 10000,
+}
