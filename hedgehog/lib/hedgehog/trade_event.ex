@@ -1,4 +1,4 @@
-defmodule Core.Struct.TradeEvent do
+defmodule Hedgehog.Exchange.TradeEvent do
   @moduledoc """
   Trade event struct
   """
